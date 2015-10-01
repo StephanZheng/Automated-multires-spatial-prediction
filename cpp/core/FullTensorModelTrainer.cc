@@ -112,10 +112,10 @@ void FullTensorModelTrainer::InitializeWeightsRandom(float range_W, float range_
 }
 void FullTensorModelTrainer::StoreStartingWeights() {
   PrintFancy(Settings_->session_start_time, "Storing weight snapshots");
-  Settings *Settings_      = this->Settings_;
-  Tensor3Blob *Weight_U      = &this->Weight_U;
+  Settings *Settings_            = this->Settings_;
+  Tensor3Blob *Weight_U          = &this->Weight_U;
   Tensor3Blob *Weight_U_Snapshot = &this->Weight_U_Snapshot;
-  VectorBlob  *Bias_A      = &this->Bias_A;
+  VectorBlob  *Bias_A            = &this->Bias_A;
   VectorBlob  *Bias_A_Snapshot   = &this->Bias_A_Snapshot;
 
   for (int i = 0; i < Weight_U->data.size(); ++i) Weight_U_Snapshot->data[i] = Weight_U->data[i];
@@ -123,10 +123,10 @@ void FullTensorModelTrainer::StoreStartingWeights() {
 }
 void FullTensorModelTrainer::RestoreStartingWeights() {
   PrintFancy(Settings_->session_start_time, "Restoring weight snapshots");
-  Settings *Settings_      = this->Settings_;
-  Tensor3Blob *Weight_U      = &this->Weight_U;
+  Settings *Settings_            = this->Settings_;
+  Tensor3Blob *Weight_U          = &this->Weight_U;
   Tensor3Blob *Weight_U_Snapshot = &this->Weight_U_Snapshot;
-  VectorBlob  *Bias_A      = &this->Bias_A;
+  VectorBlob  *Bias_A            = &this->Bias_A;
   VectorBlob  *Bias_A_Snapshot   = &this->Bias_A_Snapshot;
 
   for (int i = 0; i < Weight_U->data.size(); ++i)        Weight_U->data[i] = Weight_U_Snapshot->data[i];

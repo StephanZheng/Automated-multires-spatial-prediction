@@ -65,7 +65,7 @@ public:
       getTaskCompleteMessage();
       n_completed_tasks_seen++;
       if (n_completed_tasks_seen >= threshold) {
-        PrintFancy(high_resolution_clock::now(), "All workers finished for this task!");
+        // PrintFancy(high_resolution_clock::now(), "All workers finished for this task!");
         break;
       }
     }

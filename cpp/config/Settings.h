@@ -30,11 +30,11 @@
 using namespace std;
 
 class Settings {
-  public:
+public:
   void  Stage_One_writeToFile(string fp_snapshot, string session_id);
   void  Stage_Three_writeToFile(string fp_snapshot, string session_id);
   void  loadSettingsJSON(const char * fn_settings_file);
-  void  PrintSettings();
+  void  PrintSettings(int stage);
 
   int   EnableDebugPrinter_Level1;
   int   EnableDebugPrinter_Level2;

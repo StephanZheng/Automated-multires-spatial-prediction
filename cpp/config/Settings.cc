@@ -303,78 +303,76 @@ void Settings::Stage_Three_writeToFile(string fp_snapshot, string session_id) {
 
   ofstream myfile;
   myfile.open(fp_snapshot + "/rank3/stage3/" + DATASET_NAME + "_r3s3_" + session_id+"_settings.json");
-
   myfile << "session_id" << ", " << session_id << ",\n";
-
   myfile.close();
 }
 
-void Settings::PrintSettings() {
+void Settings::PrintSettings(int stage) {
   PrintFancy(session_start_time, "Using the following files and filepaths\n");
-
-  PrintDelimiter(1, 1, 80, '=');
-
-  PrintFancy(session_start_time, "Override settings:");
-
-  PrintDelimiter(0, 0, 40, '=');
+  PrintDelimiter(0, 0, 40, '                             =');
   cout << "StartFromStage                                = " << StartFromStage << endl;
   PrintDelimiter(0, 0, 40, '                             =');
-  // cout << "Dimension_A                                = " << Dimension_A << endl;
-  // cout << "StageOne_Dimension_B                       = " << StageOne_Dimension_B << endl;
-  // cout << "StageOne_Dimension_C                       = " << StageOne_Dimension_C << endl;
-  // cout << "StageThree_Dimension_B                     = " << StageThree_Dimension_B << endl;
-  // cout << "StageThree_Dimension_C                     = " << StageThree_Dimension_C << endl;
-  // cout << "Dimension_B_BiasSlice                      = " << Dimension_B_BiasSlice << endl;
-  // cout << "Dimension_C_BiasSlice                      = " << Dimension_C_BiasSlice << endl;
-  PrintDelimiter(0, 0, 40, '                             =');
-  cout << "NumberOfLatentDimensions_                     = " << NumberOfLatentDimensions << endl;
-  cout << "StageThree_SubDimension_1                     = " << StageThree_SubDimension_1 << endl;
-  cout << "StageThree_SubDimension_2                     = " << StageThree_SubDimension_2 << endl;
-  PrintDelimiter(0, 0, 80, '                             =');
-  // cout << "Stage 1 settings:" << endl;
-  // PrintDelimiter(0, 0, 40, '                          =');
-  // cout << "StageOne_StartingLearningRate              = " << StageOne_StartingLearningRate << endl;
-  // cout << "StageOne_Weight_U_RegularizationType       = " << StageOne_Weight_U_RegularizationType << endl;
-  // PrintDelimiter(0, 0, 80, '                          =');
-  cout << "Stage 3 settings:" << endl;
 
-  PrintDelimiter(0, 1, 40, '                             =');
+  if (stage == 1) {
+    PrintDelimiter(0, 0, 40, '                             =');
+    cout << "Stage 1 settings:" << endl;
+    PrintDelimiter(0, 0, 80, '                             =');
+    cout << "StageOne_StartingLearningRate                 = " << StageOne_StartingLearningRate << endl;
+    cout << "StageOne_Weight_U_RegularizationType          = " << StageOne_Weight_U_RegularizationType << endl;
+    PrintDelimiter(0, 0, 40, '                             =');
+    cout << "Dimension_A                                   = " << Dimension_A << endl;
+    cout << "StageOne_Dimension_B                          = " << StageOne_Dimension_B << endl;
+    cout << "StageOne_Dimension_C                          = " << StageOne_Dimension_C << endl;
+    cout << "Dimension_B_BiasSlice                         = " << Dimension_B_BiasSlice << endl;
+    cout << "Dimension_C_BiasSlice                         = " << Dimension_C_BiasSlice << endl;
+  }
 
-  cout << "StageThree_UseSpatialRegularization           = " << StageThree_UseSpatialRegularization << endl;
+  if (stage == 3) {
 
-  PrintDelimiter(1, 0, 40, '                             =');
+    cout << "Stage 3 settings:" << endl;
 
-  cout << "StageThree_StartingLearningRate               = " << StageThree_StartingLearningRate << endl;
+    PrintDelimiter(0, 1, 40, '                             =');
+    cout << "NumberOfLatentDimensions_                     = " << NumberOfLatentDimensions << endl;
+    cout << "StageThree_SubDimension_1                     = " << StageThree_SubDimension_1 << endl;
+    cout << "StageThree_SubDimension_2                     = " << StageThree_SubDimension_2 << endl;
+    cout << "StageThree_Dimension_B                        = " << StageThree_Dimension_B << endl;
+    cout << "StageThree_Dimension_C                        = " << StageThree_Dimension_C << endl;
+    PrintDelimiter(0, 0, 80, '                             =');
 
-  cout << "StageThree_UseSparseMatS                      = " << StageThree_UseSparseMatS << endl;
-  // cout << "StageThree_UseSparseLatent_B_Term          = " << StageThree_UseSparseLatent_B_Term << endl;
-  cout << "StageThree_UseSparseConcatenation             = " << StageThree_UseSparseConcatenation << endl;
+    cout << "StageThree_UseSpatialRegularization           = " << StageThree_UseSpatialRegularization << endl;
 
-  cout << "TruncatedLasso_Window                         = " << TruncatedLasso_Window << endl;
-  cout << "TruncatedLasso_Window_UpdateFrequency         = " << TruncatedLasso_Window_UpdateFrequency << endl;
-  cout << "TruncatedLasso_Window_ScaleFactor             = " << TruncatedLasso_Window_ScaleFactor << endl;
+    PrintDelimiter(1, 0, 40, '                             =');
 
-  // cout << "StageThree_Regularization_LF_A             = " << StageThree_Regularization_LF_A << endl;
-  // cout << "StageThree_B_SpatReg_Multiplier_Level1     = " << StageThree_B_SpatReg_Multiplier_Level1 << endl;
-  // cout << "StageThree_C_SpatReg_Multiplier_Level1     = " << StageThree_C_SpatReg_Multiplier_Level1 << endl;
+    cout << "StageThree_StartingLearningRate               = " << StageThree_StartingLearningRate << endl;
 
-  cout << "StageThree_UpdateSparseMatS_EveryNthMinibatch = " << StageThree_UpdateSparseMatS_EveryNthMinibatch << endl;
-  cout << "StageThree_RegularizeS_EveryBatch             = " << StageThree_RegularizeS_EveryBatch << endl;
-  cout << "StageThree_Regularization_Sparse_S_Level1     = " << StageThree_Regularization_Sparse_S_Level1 << endl;
-  // cout << "StageThree_Regularization_Sparse_S_Level2  = " << StageThree_Regularization_Sparse_S_Level2 << endl;
+    cout << "StageThree_UseSparseMatS                      = " << StageThree_UseSparseMatS << endl;
+    cout << "StageThree_UseSparseLatent_B_Term             = " << StageThree_UseSparseLatent_B_Term << endl;
+    cout << "StageThree_UseSparseConcatenation             = " << StageThree_UseSparseConcatenation << endl;
 
-  // PrintDelimiter(0, 0, 40, '                          =');
-  // cout << "StageThree_LF_A_RegularizationType         = " << StageThree_LF_A_RegularizationType << endl;
-  // cout << "StageThree_LF_B_RegularizationType         = " << StageThree_LF_B_RegularizationType << endl;
-  // cout << "StageThree_SLF_B_RegularizationType        = " << StageThree_SLF_B_RegularizationType << endl;
-  // cout << "StageThree_LF_C_RegularizationType         = " << StageThree_LF_C_RegularizationType << endl;
-  // cout << "StageThree_Sparse_S_RegularizationType     = " << StageThree_Sparse_S_RegularizationType << endl;
-  // PrintDelimiter(0, 0, 40, '                          =');
-  // cout << "StageThree_UseRepulsion_S_BC               = " << StageThree_UseRepulsion_S_BC << endl;
-  // cout << "StageThree_UseRepulsion_S_ABC              = " << StageThree_UseRepulsion_S_ABC << endl;
-  // cout << "StageThree_Regularization_RepulsionTerm    = " << StageThree_Regularization_RepulsionTerm << endl;
-  // cout << "StageThree_Regularization_S_BC             = " << StageThree_Regularization_S_BC << endl;
-  // PrintDelimiter(0, 0, 40, '                          =');
-  // cout << "GradientRandomizeAtZero             = " << GradientRandomizeAtZero << endl;
-  PrintDelimiter(1, 1, 80, '=');
+    cout << "TruncatedLasso_Window                         = " << TruncatedLasso_Window << endl;
+    cout << "TruncatedLasso_Window_UpdateFrequency         = " << TruncatedLasso_Window_UpdateFrequency << endl;
+    cout << "TruncatedLasso_Window_ScaleFactor             = " << TruncatedLasso_Window_ScaleFactor << endl;
+    cout << "StageThree_Regularization_LF_A                = " << StageThree_Regularization_LF_A << endl;
+    cout << "StageThree_B_SpatReg_Multiplier_Level1        = " << StageThree_B_SpatReg_Multiplier_Level1 << endl;
+    cout << "StageThree_C_SpatReg_Multiplier_Level1        = " << StageThree_C_SpatReg_Multiplier_Level1 << endl;
+
+    cout << "StageThree_UpdateSparseMatS_EveryNthMinibatch = " << StageThree_UpdateSparseMatS_EveryNthMinibatch << endl;
+    cout << "StageThree_RegularizeS_EveryBatch             = " << StageThree_RegularizeS_EveryBatch << endl;
+    cout << "StageThree_Regularization_Sparse_S_Level1     = " << StageThree_Regularization_Sparse_S_Level1 << endl;
+    // cout << "StageThree_Regularization_Sparse_S_Level2  = " << StageThree_Regularization_Sparse_S_Level2 << endl;
+
+    // PrintDelimiter(0, 0, 40, '                          =');
+    // cout << "StageThree_LF_A_RegularizationType         = " << StageThree_LF_A_RegularizationType << endl;
+    // cout << "StageThree_LF_B_RegularizationType         = " << StageThree_LF_B_RegularizationType << endl;
+    // cout << "StageThree_SLF_B_RegularizationType        = " << StageThree_SLF_B_RegularizationType << endl;
+    // cout << "StageThree_LF_C_RegularizationType         = " << StageThree_LF_C_RegularizationType << endl;
+    // cout << "StageThree_Sparse_S_RegularizationType     = " << StageThree_Sparse_S_RegularizationType << endl;
+    // PrintDelimiter(0, 0, 40, '                          =');
+    // cout << "StageThree_UseRepulsion_S_BC               = " << StageThree_UseRepulsion_S_BC << endl;
+    // cout << "StageThree_UseRepulsion_S_ABC              = " << StageThree_UseRepulsion_S_ABC << endl;
+    // cout << "StageThree_Regularization_RepulsionTerm    = " << StageThree_Regularization_RepulsionTerm << endl;
+    // cout << "StageThree_Regularization_S_BC             = " << StageThree_Regularization_S_BC << endl;
+    // PrintDelimiter(0, 0, 40, '                          =');
+    // cout << "GradientRandomizeAtZero                    = " << GradientRandomizeAtZero << endl;
+  }
 }

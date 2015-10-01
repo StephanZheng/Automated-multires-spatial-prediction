@@ -2,7 +2,7 @@
 # Therefore, we are lazy and combine paths for both mac local and cms cluster
 
 CC = g++
-ROOT_FOLDER = /home/stzheng/projects/robust_multitask_refactor/cpp/rank3parafac
+ROOT_FOLDER = /home/stzheng/projects/robust_multitask/cpp
 INC_DIR = \
 -I/home/ubuntu/robustmultitask_devstack/lib \
 -I/home/ubuntu/robustmultitask_devstack/lib/boost_1_57_0 \
@@ -16,12 +16,13 @@ LIB_DIR = \
 -L/home/stzheng/lib/boost_1_57_0/stage/lib
 
 LDFLAGS = -lboost_thread -lboost_system
-CFLAGS = -w -g $(LIB_DIR) $(INC_DIR) -std=c++11 -m64
+CFLAGS = -w -g3 $(LIB_DIR) $(INC_DIR) -std=c++11 -m64
 OPTFLAGS = -Ofast
 SOURCES = \
 $(wildcard config/*.cc) \
 $(wildcard core/*.cc) \
-$(wildcard util/*.cc)
+$(wildcard util/*.cc) \
+$(wildcard test/*.cc)
 
 OBJECTS_DIR = obj
 _OBJECTS = $(SOURCES:.cc=.o)
@@ -47,5 +48,5 @@ depend: $(SOURCES)
 
 # DO NOT DELETE THIS LINE -- make depend needs it
 
-debug:
-	$(CC) $(CFLAGS) *.cc -o $(EXECUTABLE) $(LDFLAGS)
+debug: $(OBJECTS)
+	$(CC) $(OPTFLAGS) $(CFLAGS) -gdwarf2 -DDEBUG $^ -o $(EXECUTABLE) $(LDFLAGS)

@@ -81,23 +81,23 @@ class FullTensorModelTrainer : public Trainer {
             CurrentStateBlob *aCurrentStateBlob_){
 
     // Tell ThreeMatrixFactorTrainer where the loaded data sits
-    IOController_          = aIOController_;
-    Blob_B_              = aBlob_B_;
-    Blob_BTransposed_        = aBlob_BTransposed_;
-    Blob_C_              = aBlob_C_;
-    Blob_CTransposed_        = aBlob_CTransposed_;
+    IOController_                    = aIOController_;
+    Blob_B_                          = aBlob_B_;
+    Blob_BTransposed_                = aBlob_BTransposed_;
+    Blob_C_                          = aBlob_C_;
+    Blob_CTransposed_                = aBlob_CTransposed_;
     GroundTruthLabelsTrainValStrong_ = aGroundTruthLabelsTrainValStrong_;
-    GroundTruthLabelsTestStrong_   = aGroundTruthLabelsTestStrong_;
+    GroundTruthLabelsTestStrong_     = aGroundTruthLabelsTestStrong_;
     GroundTruthLabelsTrainValWeak_   = aGroundTruthLabelsTrainValWeak_;
-    GroundTruthLabelsTestWeak_     = aGroundTruthLabelsTestWeak_;
-    Settings_            = aSettings_;
-    CurrentStateBlob_        = aCurrentStateBlob_;
+    GroundTruthLabelsTestWeak_       = aGroundTruthLabelsTestWeak_;
+    Settings_                        = aSettings_;
+    CurrentStateBlob_                = aCurrentStateBlob_;
 
-    int n_dimension_A        = Settings_->Dimension_A;
-    int n_dimension_B        = Settings_->StageOne_Dimension_B;
-    int n_dimension_C        = Settings_->StageOne_Dimension_C;
-    int n_frames           = Settings_->NumberOfFrames;
-    int n_threads          = Settings_->StageOne_NumberOfThreads;
+    int n_dimension_A                = Settings_->Dimension_A;
+    int n_dimension_B                = Settings_->StageOne_Dimension_B;
+    int n_dimension_C                = Settings_->StageOne_Dimension_C;
+    int n_frames                     = Settings_->NumberOfFrames;
+    int n_threads                    = Settings_->StageOne_NumberOfThreads;
 
     // VectorBlob *ptr_v;
     // MatrixBlob *ptr_m;

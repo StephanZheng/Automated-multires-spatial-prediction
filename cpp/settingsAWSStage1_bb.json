@@ -1,162 +1,162 @@
 {
 
-"StageThree_Regularization_Sparse_S_Level1"         : 0.5,
-"StageThree_UseSparseMatS"                : 0,
+"StageThree_Regularization_Sparse_S_Level1"               : 0.5,
+"StageThree_UseSparseMatS"                                : 0,
 
-"StageThree_StartingLearningRate"             : 0.000001,
-"StageThree_Initialization_Sparse_S_range"        : 0.001,
+"StageThree_StartingLearningRate"                         : 0.000001,
+"StageThree_Initialization_Sparse_S_range"                : 0.001,
 
-"StageThree_Take_SnapshotAfterEveryNthEpoch"        : 2,
-"StageThree_NumberOfThreads"                : 8,
-"StageThree_NumberOfCrossValidationRuns"          : 2,
-"StageThree_NumberOfEpochs"                 : 5,
+"StageThree_Take_SnapshotAfterEveryNthEpoch"              : 2,
+"StageThree_NumberOfThreads"                              : 8,
+"StageThree_NumberOfCrossValidationRuns"                  : 2,
+"StageThree_NumberOfEpochs"                               : 5,
 
-"StageThree_UpdateSparseMatS_EveryNthMinibatch"       : 10,
+"StageThree_UpdateSparseMatS_EveryNthMinibatch"           : 10,
 "StageThree_AddRegularizationSparseMatS_EveryNthMinibatch": 10,
 
 
 
 
 
-"-->ResumeOptions                     :: shouldn't be simultaneously 1 (is accounted for in code":  "",
+"-->ResumeOptions                                         :: shouldn't be simultaneously 1 (is accounted for in code":  "",
 
-"ResumeTraining"                      : 0,
-"StartFromStage"                      : 1,
-"StageThree_StartFromSeed"                : 0,
+"ResumeTraining"                                          : 0,
+"StartFromStage"                                          : 1,
+"StageThree_StartFromSeed"                                : 0,
 
-"RootFolder"                        : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction",
-"SnapshotSubFolder"                     : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/snapshots",
-"GroundTruthSubFolder"                  : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/groundtruth",
-"FeaturesSubFolder"                     : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/features",
-"SeedSubFolder"                       : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/seeds",
+"RootFolder"                                              : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction",
+"SnapshotSubFolder"                                       : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/snapshots",
+"GroundTruthSubFolder"                                    : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/groundtruth",
+"FeaturesSubFolder"                                       : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/features",
+"SeedSubFolder"                                           : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/seeds",
 
-"StageOne_SnapshotWeightsBiases"              : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/seeds/ss_s1_rank3_19Feb093043_10_wgt+bias_1_0_0.272273_0.271682.bin",
-"StageOne_StartFromEpoch"                 : 0,
-"StageOne_StartFromCrossValRun"               : 0,
+"StageOne_SnapshotWeightsBiases"                          : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/seeds/ss_s1_rank3_19Feb093043_10_wgt+bias_1_0_0.272273_0.271682.bin",
+"StageOne_StartFromEpoch"                                 : 0,
+"StageOne_StartFromCrossValRun"                           : 0,
 
-"StageThree_SnapshotWeightsBiases"            : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/seeds/ss_s1_rank3_19Feb093043_10_wgt+bias_1_0_0.272273_0.271682.bin",
-"StageThree_StartFromEpoch"                 : 0,
-"StageThree_StartFromCrossValRun"             : 0,
+"StageThree_SnapshotWeightsBiases"                        : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/seeds/ss_s1_rank3_19Feb093043_10_wgt+bias_1_0_0.272273_0.271682.bin",
+"StageThree_StartFromEpoch"                               : 0,
+"StageThree_StartFromCrossValRun"                         : 0,
 
-"StageThree_LF_A_seed"                  : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/seeds/seed_X_5.bin",
-"StageThree_LF_B_seed"                  : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/seeds/seed_Y_5.bin_upscaled",
-"StageThree_LF_C_seed"                  : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/seeds/seed_Z_5.bin_upscaled",
-"StageThree_Sparse_S_seed"                : "",
-
-
-"StageOne_NumberOfNonZeroEntries_B"             : 0,
-"StageOne_NumberOfNonZeroEntries_C"             : 0,
-"StageThree_NumberOfNonZeroEntries_B"           : 0,
-"StageThree_NumberOfNonZeroEntries_C"           : 0,
+"StageThree_LF_A_seed"                                    : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/seeds/seed_X_5.bin",
+"StageThree_LF_B_seed"                                    : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/seeds/seed_Y_5.bin_upscaled",
+"StageThree_LF_C_seed"                                    : "/home/ubuntu/robustmultitask_devstack/projects/robust_multitask/basketball_prediction/seeds/seed_Z_5.bin_upscaled",
+"StageThree_Sparse_S_seed"                                : "",
 
 
-
-"-->Hyperparameters"                    : "",
-
-"NumberOfLatentDimensions"                : 5,
-
-"UseFeatureThreshold"                   : 0,
-"FeatureThreshold"                    : 0.0,
-
-"GroundTruthScoreWeak"                  : -1.0,
-"GroundTruthScoreStrong"                  : 1.0,
-
-"LossWeightWeak"                      : 1.0,
-"LossWeightStrong"                    : 1.0,
-
-"NumberOfFrames"                      : 15740724,
-"Dimension_A"                       : 439,
-"NumberOfGridCells"                     : 2000,
-
-"StageOne_Dimension_B"                  : 500,
-"StageOne_Dimension_C"                  : 36,
-
-"StageThree_Dimension_B"                  : 2000,
-"StageThree_Dimension_C"                  : 144,
-
-"NumberOfStrongLabels_TrainVal"               : 1289692,
-"NumberOfStrongLabels_Train"                : 1160723,
-"NumberOfStrongLabels_Val"                : 128969,
-"NumberOfStrongLabels_Test"                 : 0,
-"NumberOfWeakLabels_TrainVal"               : 14451032,
-"NumberOfWeakLabels_Train"                : 13005929,
-"NumberOfWeakLabels_Val"                  : 1445103,
-"NumberOfWeakLabels_Test"                 : 0,
+"StageOne_NumberOfNonZeroEntries_B"                       : 0,
+"StageOne_NumberOfNonZeroEntries_C"                       : 0,
+"StageThree_NumberOfNonZeroEntries_B"                     : 0,
+"StageThree_NumberOfNonZeroEntries_C"                     : 0,
 
 
 
-"-->CustomTrainingOptions"                : "",
+"-->Hyperparameters"                                      : "",
 
-"StageOne_TrainingConditionalScoreThreshold"        : 0.1,
-"StageOne_ValidationConditionalScoreThreshold"      : 0.1,
-"StageOne_TestConditionalScoreThreshold"          : 0.1,
+"NumberOfLatentDimensions"                                : 5,
 
-"StageOne_StartingLearningRate"               : 0.09,
+"UseFeatureThreshold"                                     : 0,
+"FeatureThreshold"                                        : 0.0,
 
-"StageOne_Clamp_AdaptiveLearningRate"           : 0.05,
+"GroundTruthScoreWeak"                                    : -1.0,
+"GroundTruthScoreStrong"                                  : 1.0,
 
-"StageOne_ComputeLossAfterEveryNthEpoch"          : 1,
-"StageOne_Take_SnapshotAfterEveryNthEpoch"        : 1,
-"StageOne_NumberOfThreads"                : 4,
-"StageOne_NumberOfCrossValidationRuns"          : 10,
-"StageOne_NumberOfEpochs"                 : 10,
-"StageOne_MiniBatchSize"                  : 400,
-"StageOne_ApplyMomentumEveryNthMinibatch"         : 20,
-"StageOne_ResetMomentumEveryNthEpoch"           : 5,
+"LossWeightWeak"                                          : 1.0,
+"LossWeightStrong"                                        : 1.0,
 
-"StageOne_StatusEveryNBatchesTrain"             : 100,
-"StageOne_StatusEveryNBatchesValid"             : 25,
+"NumberOfFrames"                                          : 15740724,
+"Dimension_A"                                             : 439,
+"NumberOfGridCells"                                       : 2000,
 
-"StageOne_Initialization_Weight_U_range"          : 0.0,
-"StageOne_Regularization_Weight_U_Level1"         : 0.1,
-"StageOne_Regularization_Weight_U_Level2"         : 0.2,
-"StageOne_Regularization_Weight_U_Level3"         : 0.5,
+"StageOne_Dimension_B"                                    : 500,
+"StageOne_Dimension_C"                                    : 36,
 
-"StageOne_UseBias"                    : 1,
-"StageOne_Initialization_Bias_A_range"          : 0.2,
-"StageOne_Regularization_Bias_A"              : 0.0,
+"StageThree_Dimension_B"                                  : 2000,
+"StageThree_Dimension_C"                                  : 144,
 
-"StageOne_UseWeight_UThreshold"               : 1,
-"StageOne_Weight_UThreshold"                : 0.0,
+"NumberOfStrongLabels_TrainVal"                           : 1289692,
+"NumberOfStrongLabels_Train"                              : 1160723,
+"NumberOfStrongLabels_Val"                                : 128969,
+"NumberOfStrongLabels_Test"                               : 0,
+"NumberOfWeakLabels_TrainVal"                             : 14451032,
+"NumberOfWeakLabels_Train"                                : 13005929,
+"NumberOfWeakLabels_Val"                                  : 1445103,
+"NumberOfWeakLabels_Test"                                 : 0,
 
 
 
-"StageThree_UseBias"                    : 1,
-"StageThree_UseAdaptiveLearningRate"            : 0,
-"StageThree_UseLatentTerm"                : 1,
+"-->CustomTrainingOptions"                                : "",
 
-"StageThree_UseSparseMatSThreshold"             : 1,
-"StageThree_SparseMatSThreshold"              : 0.0,
+"StageOne_TrainingConditionalScoreThreshold"              : 0.1,
+"StageOne_ValidationConditionalScoreThreshold"            : 0.1,
+"StageOne_TestConditionalScoreThreshold"                  : 0.1,
 
-"StageThree_TrainingConditionalScoreThreshold"      : 0.1,
-"StageThree_ValidationConditionalScoreThreshold"      : 0.1,
-"StageThree_TestConditionalScoreThreshold"        : 0.2,
-"StageThree_Clamp_AdaptiveLearningRate"           : 0.0001,
+"StageOne_StartingLearningRate"                           : 0.09,
 
-"StageThree_Initialization_weightW_range"         : 0.0,
-"StageThree_Initialization_LF_A_range"          : 0.0,
+"StageOne_Clamp_AdaptiveLearningRate"                     : 0.05,
 
-"StageThree_Initialization_Bias_A_range"          : 0.1,
+"StageOne_ComputeLossAfterEveryNthEpoch"                  : 1,
+"StageOne_Take_SnapshotAfterEveryNthEpoch"                : 1,
+"StageOne_NumberOfThreads"                                : 4,
+"StageOne_NumberOfCrossValidationRuns"                    : 10,
+"StageOne_NumberOfEpochs"                                 : 10,
+"StageOne_MiniBatchSize"                                  : 400,
+"StageOne_ApplyMomentumEveryNthMinibatch"                 : 20,
+"StageOne_ResetMomentumEveryNthEpoch"                     : 5,
 
-"StageThree_Regularization_LF_A"              : 0.1,
-"StageThree_Regularization_LF_B_Level1"           : 0.1,
-"StageThree_Regularization_LF_B_Level2"           : 0.5,
-"StageThree_Regularization_LF_C_Level1"           : 0.1,
-"StageThree_Regularization_LF_C_Level2"           : 0.5,
+"StageOne_StatusEveryNBatchesTrain"                       : 100,
+"StageOne_StatusEveryNBatchesValid"                       : 25,
 
-"StageThree_Regularization_Sparse_S_Level2"         : 0.5,
-"StageThree_Regularization_Bias_A"            : 0.0,
+"StageOne_Initialization_Weight_U_range"                  : 0.0,
+"StageOne_Regularization_Weight_U_Level1"                 : 0.1,
+"StageOne_Regularization_Weight_U_Level2"                 : 0.2,
+"StageOne_Regularization_Weight_U_Level3"                 : 0.5,
 
-"StageThree_ComputeLossAfterEveryNthEpoch"        : 1,
+"StageOne_UseBias"                                        : 1,
+"StageOne_Initialization_Bias_A_range"                    : 0.2,
+"StageOne_Regularization_Bias_A"                          : 0.0,
 
-"StageThree_MiniBatchSize"                : 400,
+"StageOne_UseWeight_UThreshold"                           : 1,
+"StageOne_Weight_UThreshold"                              : 0.0,
 
 
 
-"StageThree_ApplyMomentumEveryNthMinibatch"         : 50,
-"StageThree_ResetMomentumEveryNthEpoch"           : 2,
+"StageThree_UseBias"                                      : 1,
+"StageThree_UseAdaptiveLearningRate"                      : 0,
+"StageThree_UseLatentTerm"                                : 1,
 
-"StageThree_StatusEveryNBatchesTrain"           : 50,
-"StageThree_StatusEveryNBatchesValid"           : 25
+"StageThree_UseSparseMatSThreshold"                       : 1,
+"StageThree_SparseMatSThreshold"                          : 0.0,
+
+"StageThree_TrainingConditionalScoreThreshold"            : 0.1,
+"StageThree_ValidationConditionalScoreThreshold"          : 0.1,
+"StageThree_TestConditionalScoreThreshold"                : 0.2,
+"StageThree_Clamp_AdaptiveLearningRate"                   : 0.0001,
+
+"StageThree_Initialization_weightW_range"                 : 0.0,
+"StageThree_Initialization_LF_A_range"                    : 0.0,
+
+"StageThree_Initialization_Bias_A_range"                  : 0.1,
+
+"StageThree_Regularization_LF_A"                          : 0.1,
+"StageThree_Regularization_LF_B_Level1"                   : 0.1,
+"StageThree_Regularization_LF_B_Level2"                   : 0.5,
+"StageThree_Regularization_LF_C_Level1"                   : 0.1,
+"StageThree_Regularization_LF_C_Level2"                   : 0.5,
+
+"StageThree_Regularization_Sparse_S_Level2"               : 0.5,
+"StageThree_Regularization_Bias_A"                        : 0.0,
+
+"StageThree_ComputeLossAfterEveryNthEpoch"                : 1,
+
+"StageThree_MiniBatchSize"                                : 400,
+
+
+
+"StageThree_ApplyMomentumEveryNthMinibatch"               : 50,
+"StageThree_ResetMomentumEveryNthEpoch"                   : 2,
+
+"StageThree_StatusEveryNBatchesTrain"                     : 50,
+"StageThree_StatusEveryNBatchesValid"                     : 25
 
 }

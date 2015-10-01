@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  Settings_->PrintSettings();
+  Settings_->PrintSettings(Settings_->StartFromStage);
 
   // --------------------------------------------------------------------------------------------------------------------------
   // Setting filepaths
@@ -165,6 +165,8 @@ int main(int argc, char *argv[]) {
   cout << fp_groundtruth_test_split_strong << endl;
   cout << fp_groundtruth_trainval_split_weak << endl;
   cout << fp_groundtruth_test_split_weak << endl;
+
+
 
 
   IOController *IOController_ = new IOController(Settings_, CurrentStateBlob_);

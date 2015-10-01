@@ -25,7 +25,7 @@ StageThree_Regularization_SparseS_Level1="0.1"
 StageThree_Regularization_SparseS_Level2="0.1"
 StageThree_Initialization_SparseS_range="0.1"
 
-SETTINGS_JSON="/home/stzheng/symlinks/robustmultitask_cpp/settingsCMSStage3_bb.json"
+SETTINGS_JSON="/home/stzheng/symlinks/robustmultitask_cpp/settingsCMSStage1_bb.json"
 PYTHON_LOGGING_ID="1111111"
 
 for NumberOfLatentDimensionsBallHandler_ in $NumberOfLatentDimensionsBallHandler;
