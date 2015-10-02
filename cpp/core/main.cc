@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
 
   PerformanceController PerformanceController_(Settings_);
 
-  PrintFancy(Settings_->session_start_time, _SCRIPTTITLE);
+  PrintWithDelimiters(Settings_->session_start_time, _SCRIPTTITLE);
 
   time_t now = system_clock::to_time_t(Settings_->session_start_time);
   char timestamp[80];
@@ -195,8 +195,7 @@ int main(int argc, char *argv[]) {
   MatrixBlob *Blob_CC_;
   MatrixBlob *Blob_CTransposed_;
 
-  PrintDelimiter(1, 1, 80, '=');
-  PrintFancy(Settings_->session_start_time, "Settings_->StartFromStage: " + to_string(Settings_->StartFromStage));
+  PrintWithDelimiters(Settings_->session_start_time, "Settings_->StartFromStage: " + to_string(Settings_->StartFromStage));
 
   // Initialize class-weights
   Settings_->TaskWeight.init(Settings_->Dimension_A);
@@ -226,14 +225,9 @@ int main(int argc, char *argv[]) {
     // Stage 1 - train full-rank model on FULL data-set (overfit ok with all strong / weak labels)
     // ================================================================================================
 
-    // ================================================================================================
-    // Input to the program - linked interactions, visual features, ground truth labels - fixed!
-    // ================================================================================================
-
     high_resolution_clock::time_point start_time_load_features = high_resolution_clock::now();
 
-    PrintDelimiter(1, 1, 80, '=');
-    PrintFancy(Settings_->session_start_time, "Settings_->NumberOfFrames: " + to_string(Settings_->NumberOfFrames));
+    PrintWithDelimiters(Settings_->session_start_time, "Settings_->NumberOfFrames: " + to_string(Settings_->NumberOfFrames));
 
     MatrixBlob *Blob_B_ = new MatrixBlob(Settings_->NumberOfFrames, Settings_->StageOne_NumberOfNonZeroEntries_B);
     MatrixBlob *Blob_C_ = new MatrixBlob(Settings_->NumberOfFrames, Settings_->DummyMultiplier * Settings_->StageOne_NumberOfNonZeroEntries_C);
@@ -247,8 +241,7 @@ int main(int argc, char *argv[]) {
 
     high_resolution_clock::time_point start_time_stage_one = high_resolution_clock::now();
 
-    PrintDelimiter(1, 1, 80, '=');
-    PrintFancy(Settings_->session_start_time, "Starting Stage 1");
+    PrintWithDelimiters(Settings_->session_start_time, "Starting Stage 1");
 
     FullTensorModelTrainer_ = new FullTensorModelTrainer(IOController_,
                            Blob_B_,
@@ -288,8 +281,7 @@ int main(int argc, char *argv[]) {
 
     high_resolution_clock::time_point start_time_load_features = high_resolution_clock::now();
 
-    PrintDelimiter(1, 1, 80, '=');
-    PrintFancy(Settings_->session_start_time, "Settings_->NumberOfFrames: " + to_string(Settings_->NumberOfFrames));
+    PrintWithDelimiters(Settings_->session_start_time, "Settings_->NumberOfFrames: " + to_string(Settings_->NumberOfFrames));
 
     Blob_B_       = new MatrixBlob(Settings_->NumberOfFrames, Settings_->StageThree_NumberOfNonZeroEntries_B);
     Blob_BTransposed_ = new MatrixBlob(Settings_->StageThree_NumberOfNonZeroEntries_B, Settings_->NumberOfFrames);
@@ -311,8 +303,7 @@ int main(int argc, char *argv[]) {
 
     high_resolution_clock::time_point start_time_stage_three = high_resolution_clock::now();
 
-    PrintDelimiter(1, 1, 80, '=');
-    PrintFancy(Settings_->session_start_time, "Starting Stage 3");
+    PrintWithDelimiters(Settings_->session_start_time, "Starting Stage 3");
 
     ThreeMatrixFactorTrainer_ = new ThreeMatrixFactorTrainer(IOController_,
                              Blob_B_,
