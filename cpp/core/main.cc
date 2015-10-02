@@ -57,12 +57,9 @@ using std::chrono::system_clock;
  * @return
  */
 int main(int argc, char *argv[]) {
-  char * fn_settings_json_file;
-  assert(argc > 1);  // We need at least a settings -- *.json -- file
-  // You can also override JSON settings with command-line settings
 
+  // Some time logging. Needed for timing of run.
   high_resolution_clock::time_point start_time = high_resolution_clock::now();
-
   Settings *Settings_                          = new Settings;
   Settings_->session_start_time                = start_time;
 
@@ -84,55 +81,76 @@ int main(int argc, char *argv[]) {
 
   int _override = 0;
   PrintFancy(Settings_->session_start_time, "Seen " + to_string(argc) + " arguments" );
-  for (int i = 0; i < argc; ++i) {
-    // TODO(S) Check if input is strin
-    if (i == 1) {
-      fn_settings_json_file = argv[i];
-      Settings_->loadSettingsJSON(fn_settings_json_file);
-    }
-    if (i == 2) {
-      assert(argc == 19);  // If we specify more options than just the settings-file, than we need to specify exactly the right number of override settings
-      if (stoi(argv[i]) == 1) {
-        PrintFancy(Settings_->session_start_time, "You specified additional arguments, so these will override some settings from those in the JSON file!");
-        _override = 1;
+
+  char * features_json_file;
+  char * labels_json_file;
+  char * training_param_json_file;
+  assert(argc > 1);  // We need at least a settings -- *.json -- file
+  // You can also override JSON settings with command-line settings
+
+  if (argc != 4 && argc != 21) {
+    PrintFancy<string>("You should specify either 3 JSON files *or* 3 JSON + 16 override arguments.");
+    exit;
+  } else if (argc == 4) {
+    features_json_file       = argv[1];
+    labels_json_file         = argv[2];
+    training_param_json_file = argv[3];
+    Settings_->loadSettingsJSON(features_json_file);
+    Settings_->loadSettingsJSON(labels_json_file);
+    Settings_->loadSettingsJSON(training_param_json_file);
+  } else if (argc == 21) {
+    features_json_file       = argv[1];
+    labels_json_file         = argv[2];
+    training_param_json_file = argv[3];
+    Settings_->loadSettingsJSON(features_json_file);
+    Settings_->loadSettingsJSON(labels_json_file);
+    Settings_->loadSettingsJSON(training_param_json_file);
+    for (int i = 0; i < argc; ++i) {
+      if (i == 2) {
+        assert(argc == 21);  // If we specify more options than just the settings-file, than we need to specify exactly the right number of override settings
+        if (stoi(argv[i]) == 1) {
+          PrintFancy(Settings_->session_start_time, "You specified additional arguments, so these will override some settings from those in the JSON file!");
+          _override = 1;
+        }
       }
-    }
-    if (_override == 1) {
+      if (_override == 1) {
+        cout << argv[i] << endl;
+        if (i == 3) {
+          Settings_->StageOne_StartingLearningRate       = strtod(argv[i], NULL);
+          Settings_->StageOne_Clamp_AdaptiveLearningRate = strtod(argv[i], NULL);
+        }
+        if (i == 4) {
+          Settings_->StageThree_StartingLearningRate       = strtod(argv[i], NULL);
+          Settings_->StageThree_Clamp_AdaptiveLearningRate = strtod(argv[i], NULL);
+        }
 
-      cout << argv[i] << endl;
-      if (i == 3) {
-        Settings_->StageOne_StartingLearningRate       = strtod(argv[i], NULL);
-        Settings_->StageOne_Clamp_AdaptiveLearningRate = strtod(argv[i], NULL);
+        if (i == 5) Settings_->LossWeightWeak                       = strtod(argv[i], NULL);
+        if (i == 6) Settings_->StartFromStage                       = stoi(argv[i], NULL);
+
+        if (i == 7) {
+          Settings_->NumberOfLatentDimensions  = stoi(argv[i], NULL);
+          // Settings_->StageThree_LF_A_seed = Settings_->SeedSubFolder + "/seed_X_" + to_string(Settings_->NumberOfLatentDimensions) + ".bin";
+          // Settings_->StageThree_LF_B_seed = Settings_->SeedSubFolder + "/seed_Y_" + to_string(Settings_->NumberOfLatentDimensions) + ".bin_upscaled";
+          // Settings_->StageThree_LF_C_seed = Settings_->SeedSubFolder + "/seed_Z_" + to_string(Settings_->NumberOfLatentDimensions) + ".bin_upscaled";
+        }
+        if (i == 8) Settings_->StageThree_UseSparseMatS                 = stoi(argv[i], NULL);
+
+        if (i == 9) Settings_->StageThree_Regularization_LF_A               = strtod(argv[i], NULL);
+        if (i == 10) Settings_->StageThree_ApplyMomentumEveryNthMinibatch         = stoi(argv[i], NULL);
+        if (i == 11) Settings_->StageThree_ResetMomentumEveryNthEpoch           = stoi(argv[i], NULL);
+        if (i == 12) Settings_->StageThree_TrainOnLatentFactorsEveryBatch         = stoi(argv[i], NULL);
+        if (i == 13) Settings_->StageThree_UpdateSparseMatS_EveryNthMinibatch       = stoi(argv[i], NULL);
+        if (i == 14) Settings_->StageThree_RegularizeS_EveryBatch             = stoi(argv[i], NULL);
+        if (i == 15) Settings_->StageThree_Regularization_Sparse_S_Level1         = strtod(argv[i], NULL);
+        if (i == 16) Settings_->StageThree_Regularization_Sparse_S_Level2         = strtod(argv[i], NULL);
+        if (i == 17) Settings_->StageThree_Initialization_Sparse_S_range        = strtod(argv[i], NULL);
+
+        if (i == 18) Settings_->PYTHON_LOGGING_ID                     = stoi(argv[i], NULL);
       }
-      if (i == 4) {
-        Settings_->StageThree_StartingLearningRate       = strtod(argv[i], NULL);
-        Settings_->StageThree_Clamp_AdaptiveLearningRate = strtod(argv[i], NULL);
-      }
-
-      if (i == 5) Settings_->LossWeightWeak                       = strtod(argv[i], NULL);
-      if (i == 6) Settings_->StartFromStage                       = stoi(argv[i], NULL);
-
-      if (i == 7) {
-        Settings_->NumberOfLatentDimensions  = stoi(argv[i], NULL);
-        // Settings_->StageThree_LF_A_seed = Settings_->SeedSubFolder + "/seed_X_" + to_string(Settings_->NumberOfLatentDimensions) + ".bin";
-        // Settings_->StageThree_LF_B_seed = Settings_->SeedSubFolder + "/seed_Y_" + to_string(Settings_->NumberOfLatentDimensions) + ".bin_upscaled";
-        // Settings_->StageThree_LF_C_seed = Settings_->SeedSubFolder + "/seed_Z_" + to_string(Settings_->NumberOfLatentDimensions) + ".bin_upscaled";
-      }
-      if (i == 8) Settings_->StageThree_UseSparseMatS                 = stoi(argv[i], NULL);
-
-      if (i == 9) Settings_->StageThree_Regularization_LF_A               = strtod(argv[i], NULL);
-      if (i == 10) Settings_->StageThree_ApplyMomentumEveryNthMinibatch         = stoi(argv[i], NULL);
-      if (i == 11) Settings_->StageThree_ResetMomentumEveryNthEpoch           = stoi(argv[i], NULL);
-      if (i == 12) Settings_->StageThree_TrainOnLatentFactorsEveryBatch         = stoi(argv[i], NULL);
-      if (i == 13) Settings_->StageThree_UpdateSparseMatS_EveryNthMinibatch       = stoi(argv[i], NULL);
-      if (i == 14) Settings_->StageThree_RegularizeS_EveryBatch             = stoi(argv[i], NULL);
-      if (i == 15) Settings_->StageThree_Regularization_Sparse_S_Level1         = strtod(argv[i], NULL);
-      if (i == 16) Settings_->StageThree_Regularization_Sparse_S_Level2         = strtod(argv[i], NULL);
-      if (i == 17) Settings_->StageThree_Initialization_Sparse_S_range        = strtod(argv[i], NULL);
-
-      if (i == 18) Settings_->PYTHON_LOGGING_ID                     = stoi(argv[i], NULL);
     }
   }
+
+
 
   Settings_->PrintSettings(Settings_->StartFromStage);
 

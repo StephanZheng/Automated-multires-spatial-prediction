@@ -1,0 +1,19 @@
+{
+"DATASET_NAME"                                : "bb",
+"FILENAME_GTRUTH_TRAINVAL_STRONG"             : "/gtruth_ballhandler_strong.bin",
+"FILENAME_GTRUTH_TRAINVAL_WEAK"               : "/gtruth_ballhandler_weak.bin",
+"GroundTruthSubFolder"                        : "/cs/ml/datasets/bball_tracking/groundtruth",
+"Dimension_A"                                 : 439,
+"DummyMultiplier"                             : 1,
+"NumberOfBallHandlers"                        : 439,
+"NumberOfColumnsScoreFunction"                : 1,
+"NumberOfFrames"                              : 15740724,
+"NumberOfStrongLabels_Test"                   : 0,
+"NumberOfStrongLabels_Train"                  : 1160723,
+"NumberOfStrongLabels_TrainVal"               : 1289692,
+"NumberOfStrongLabels_Val"                    : 128969,
+"NumberOfWeakLabels_Test"                     : 0,
+"NumberOfWeakLabels_Train"                    : 13005929,
+"NumberOfWeakLabels_TrainVal"                 : 14451032,
+"NumberOfWeakLabels_Val"                      : 1445103
+}
