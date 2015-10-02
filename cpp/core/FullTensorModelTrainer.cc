@@ -186,10 +186,11 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
   for (int thread_id = 0; thread_id < Settings_->StageOne_NumberOfThreads; ++thread_id) {
     threads[thread_id] = new boost::thread(&FullTensorModelTrainer::ThreadComputer, this, thread_id);
   }
-
-  // Start putting tasks on the queue
   int n_total_labels_train  = Settings_->NumberOfWeakLabels_Train + Settings_->NumberOfStrongLabels_Train;
 
+  // ------------------------------------------------------------------------------------------------------------------------------
+  // Xval runs
+  // ------------------------------------------------------------------------------------------------------------------------------
   for (int cross_val_run = Settings_->StageOne_StartFromCrossValRun; cross_val_run < Settings_->StageOne_NumberOfCrossValidationRuns; ++cross_val_run) {
 
     PrintFancy(Settings_->session_start_time, "M | Starting cross-validation run: " + to_string(cross_val_run));
@@ -206,13 +207,16 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
 
     // We also want to go randomly through the chosen training-set -- shuffle the train-indices
     // Reset learning learning_rate
-    Settings_->StageOne_CurrentLearningRate              = Settings_->StageOne_StartingLearningRate;
-    Settings_->StageOne_Cumulative_sum_of_squared_first_derivatives  = 0.;
-    Settings_->StageOne_LossTrainPreviousEpoch             = LOSS_INIT_VALUE;
-    Settings_->StageOne_LossValidPreviousEpoch             = LOSS_INIT_VALUE;
+    Settings_->StageOne_CurrentLearningRate                         = Settings_->StageOne_StartingLearningRate;
+    Settings_->StageOne_Cumulative_sum_of_squared_first_derivatives = 0.;
+    Settings_->StageOne_LossTrainPreviousEpoch                      = LOSS_INIT_VALUE;
+    Settings_->StageOne_LossValidPreviousEpoch                      = LOSS_INIT_VALUE;
 
     int epoch = Settings_->StageOne_StartFromEpoch;
 
+    // ------------------------------------------------------------------------------------------------------------------------------
+    // Epochs: 1 epoch == 1 pass over dataset
+    // ------------------------------------------------------------------------------------------------------------------------------
     while (epoch < Settings_->StageOne_NumberOfEpochs) {
 
       PrintFancy(Settings_->session_start_time, "M | Starting epoch: " + to_string(epoch));
@@ -251,6 +255,10 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
 
       PrintFancy(Settings_->session_start_time, "M | Computing terms for train-set. Looping over all strong+weak train labels.");
 
+
+      // ------------------------------------------------------------------------------------------------------------------------------
+      // Minibatch stochastic gradient descent
+      // ------------------------------------------------------------------------------------------------------------------------------
       for (int batch = 0; batch < n_batches; batch++) {
 
         if (n_batches_served % Settings_->StageOne_StatusEveryNBatchesTrain == 0) {
@@ -258,7 +266,9 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
           this->DebuggingTestProbe(0, 0, 0, 0, 0);
         }
 
-        // ComputeConditionalScore
+        // ------------------------------------------------------------------------------------------------------------------------------
+        // Forward-prop: ComputeConditionalScore
+        // ------------------------------------------------------------------------------------------------------------------------------
         // if (batch % Settings_->StageOne_StatusEveryNBatchesTrain == 0) PrintFancy(Settings_->session_start_time, to_string(batch) + " | starting ComputeConditionalScore");
         n_threads_commanded_this_batch = this->generateTrainingBatches(1, batch, n_batches, n_datapoints_processed_so_far_this_epoch, Settings_->StageOne_MiniBatchSize);
         task_queue_.waitForTasksToComplete(n_threads_commanded_this_batch);
@@ -280,6 +290,9 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
           break;
         }
 
+        // ------------------------------------------------------------------------------------------------------------------------------
+        // Backprop: Compute gradient
+        // ------------------------------------------------------------------------------------------------------------------------------
         // Compute change in weight matrix W
         // if (batch % Settings_->StageOne_StatusEveryNBatchesTrain == 0) PrintFancy(Settings_->session_start_time, to_string(batch) + " | starting ComputeWeight_U_Update");
         n_threads_commanded_this_batch = this->generateTrainingBatches(2, batch, n_batches, n_datapoints_processed_so_far_this_epoch, Settings_->StageOne_MiniBatchSize);
@@ -291,7 +304,9 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
           task_queue_.waitForTasksToComplete(n_threads_commanded_this_batch);
         }
 
-        // Apply computed updates to weight matrix W
+        // ------------------------------------------------------------------------------------------------------------------------------
+        // Backprop: Apply computed updates to weight matrix W
+        // ------------------------------------------------------------------------------------------------------------------------------
         n_threads_commanded_this_batch = this->generateTrainingBatches(3, batch, n_batches, n_datapoints_processed_so_far_this_epoch, Settings_->StageOne_MiniBatchSize);
         task_queue_.waitForTasksToComplete(n_threads_commanded_this_batch);
 
@@ -312,14 +327,15 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
           Weight_U->ThresholdValues(-1e99, Settings_->StageOne_Weight_U_Threshold, Settings_->StageOne_Weight_U_Threshold);
         }
 
+        // ------------------------------------------------------------------------------------------------------------------------------
         // Debug -- peek at weights
         if (Settings_->EnableDebugPrinter_Level3 == 1) {
           cout << "Debug -- Weight_U peek -- batch " << batch << endl;
           Weight_U->showTensorContents(10, 1, 10, 1, 36);
-
           cout << "Debug -- Weight_U_Diff peek -- batch " << batch << endl;
           Weight_U_Diff->showTensorContents(10, 1, 10, 1, 36);
         }
+        // ------------------------------------------------------------------------------------------------------------------------------
 
         if (Settings_->StageOne_Weight_U_ClampToThreshold == 1){
           if (Settings_->EnableDebugPrinter_Level2 == 1) {
@@ -760,11 +776,11 @@ float FullTensorModelTrainer::ComputeTripleProductPsiPsiU(int thread_id, int fra
   return sum;
 }
 float FullTensorModelTrainer::ComputeScore(int thread_id, int index_A, int frame_id) {
-  Settings  *Settings_ = this->Settings_;
+  Settings    *Settings_ = this->Settings_;
   Tensor3Blob *Weight_U  = &(this->Weight_U);
-  VectorBlob  *Bias_A  = &(this->Bias_A);
+  VectorBlob  *Bias_A    = &(this->Bias_A);
 
-  float     score    = 0.;
+  float     score        = 0.;
 
   std::vector<int> indices_B = this->getIndices_B(frame_id, 1);
   std::vector<int> indices_C = this->getIndices_C(frame_id, 1);
@@ -785,8 +801,8 @@ float FullTensorModelTrainer::ComputeScore(int thread_id, int index_A, int frame
 int FullTensorModelTrainer::ComputeConditionalScore(int thread_id, int index_A, int frame_id, int ground_truth_label) {
   // PrintFancy(Settings_->session_start_time, "T"+to_string(thread_id) + " - ComputeConditionalScore");
 
-  Settings  *Settings_       = this->Settings_;
-  MatrixBlob  *ConditionalScore  = &(this->ConditionalScore);
+  Settings  *Settings_          = this->Settings_;
+  MatrixBlob  *ConditionalScore = &(this->ConditionalScore);
 
   float score = this->ComputeScore(thread_id, index_A, frame_id);
 
@@ -801,8 +817,8 @@ int FullTensorModelTrainer::ComputeConditionalScore(int thread_id, int index_A, 
   if (Settings_->EnableDebugPrinter_Level1 == 1){
     if (frame_id % 100000 == 0) {
       cout << "BallHandler ID : " << index_A << endl;
-      cout << "Frame ID     : " << frame_id << endl;
-      cout << "Action     : " << ground_truth_label << endl;
+      cout << "Frame ID       : " << frame_id << endl;
+      cout << "Action         : " << ground_truth_label << endl;
       cout << setprecision(PRINT_FLOAT_PRECISION_SCORE) << "Score      : " << score << endl;
     }
   }
@@ -812,29 +828,29 @@ int FullTensorModelTrainer::ComputeConditionalScore(int thread_id, int index_A, 
 void FullTensorModelTrainer::ComputeWeight_U_Update(int thread_id, int index_A, int frame_id, int ground_truth_label) {
   // PrintFancy(Settings_->session_start_time, "T"+to_string(thread_id) + " - ComputeWeight_U_Update");
 
-  Settings  *Settings_       = this->Settings_;
-  MatrixBlob  *ConditionalScore    = &(this->ConditionalScore);
-  Tensor3Blob *Weight_U        = &(this->Weight_U);
-  Tensor3Blob *Weight_U_diff     = &(this->Weight_U_Diff);
+  Settings  *Settings_               = this->Settings_;
+  MatrixBlob  *ConditionalScore      = &(this->ConditionalScore);
+  Tensor3Blob *Weight_U              = &(this->Weight_U);
+  Tensor3Blob *Weight_U_diff         = &(this->Weight_U_Diff);
   Tensor3Blob *Weight_U_DiffSq_Cache = &(this->Weight_U_DiffSq_Cache);
 
-  int n_dimension_B          = Settings_->StageOne_Dimension_B;
-  int n_dimension_C          = Settings_->StageOne_Dimension_C;
+  int n_dimension_B                  = Settings_->StageOne_Dimension_B;
+  int n_dimension_C                  = Settings_->StageOne_Dimension_C;
 
-  float ExponentialScore       = ConditionalScore->at(frame_id, index_A % Settings_->ScoreFunctionColumnIndexMod);
-  float learning_rate        = Settings_->StageOne_CurrentLearningRate;
-  int   n_MiniBatchSize        = Settings_->StageOne_MiniBatchSize;
-  float regularizationU        = Settings_->StageOne_Regularization_Weight_U_Level1;
+  float ExponentialScore             = ConditionalScore->at(frame_id, index_A % Settings_->ScoreFunctionColumnIndexMod);
+  float learning_rate                = Settings_->StageOne_CurrentLearningRate;
+  int   n_MiniBatchSize              = Settings_->StageOne_MiniBatchSize;
+  float regularizationU              = Settings_->StageOne_Regularization_Weight_U_Level1;
 
-  float strongweakweight       = 0.;
-  float factor             = 0.;
-  float U_gradient           = 0.;
-  float index_B_val          = 0.;
-  float index_C_val          = 0.;
-  float old_weight           = 0.;
-  float gradient_reg         = 0.;
-  float grad_at_zero         = 0.;
-  int serial_index           = 0;
+  float strongweakweight             = 0.;
+  float factor                       = 0.;
+  float U_gradient                   = 0.;
+  float index_B_val                  = 0.;
+  float index_C_val                  = 0.;
+  float old_weight                   = 0.;
+  float gradient_reg                 = 0.;
+  float grad_at_zero                 = 0.;
+  int serial_index                   = 0;
 
   if (ground_truth_label == 0) {
     strongweakweight = Settings_->LossWeightWeak;
@@ -849,16 +865,12 @@ void FullTensorModelTrainer::ComputeWeight_U_Update(int thread_id, int index_A, 
   std::vector<int> indices_C = this->getIndices_C(frame_id, 1);
   assert(indices_C.size() == 1 + Settings_->DummyMultiplier * (Settings_->StageOne_NumberOfNonZeroEntries_C));
 
-  // if (frame_id % 1000000 == 0) {
-  //   for (int i = 0; i < indices_B.size(); ++i)
-  //   {
-  //     cout << "T: " << thread_id << " Frame " << frame_id << " Debug: indices_B " << i << " " << indices_B[i] << endl;
-  //   }
-  //   for (int i = 0; i < indices_C.size(); ++i)
-  //   {
-  //     cout << "T: " << thread_id << " Frame " << frame_id << " Debug: indices_C " << i << " " << indices_C[i] << endl;
-  //   }
-  // }
+  if (Settings_->EnableDebugPrinter_Level2 == 1 and frame_id % 10000 == 0) {
+    cout << "T: " << thread_id << " Frame " << frame_id << " indices_B: ";
+    PrintContentsOfVector<int>(indices_B);
+    cout << "T: " << thread_id << " Frame " << frame_id << " indices_C: ";
+    PrintContentsOfVector<int>(indices_C);
+  }
 
   int index_B_ptr = 0;
   int index_C_ptr = 0;
@@ -870,7 +882,7 @@ void FullTensorModelTrainer::ComputeWeight_U_Update(int thread_id, int index_A, 
     //   cout << "T: " << thread_id << " index_B " << index_B << " Frame " << frame_id << " Debug: indices_B[" << index_B_ptr << "] = " << indices_B[index_B_ptr] << endl;
     // }
 
-    if (index_B == 0)         regularizationU = Settings_->StageOne_Regularization_Weight_U_Level1;
+    if (index_B == 0)               regularizationU = Settings_->StageOne_Regularization_Weight_U_Level1;
     if (index_B == n_dimension_B)   regularizationU = Settings_->StageOne_Regularization_Weight_U_Level2;
 
     if (indices_B[index_B_ptr] < 0) {
@@ -895,7 +907,7 @@ void FullTensorModelTrainer::ComputeWeight_U_Update(int thread_id, int index_A, 
 
       if (indices_C[index_C_ptr] < 0) {
         index_C_ptr += 1;
-        index_C   -= 1;
+        index_C     -= 1;
         continue;
       }
 
@@ -937,21 +949,21 @@ void FullTensorModelTrainer::ComputeWeight_U_Update(int thread_id, int index_A, 
 }
 void FullTensorModelTrainer::ProcessWeight_U_Updates(int thread_id, int index_A) {
   // PrintFancy(Settings_->session_start_time, "T"+to_string(thread_id) + " - ProcessWeight_U_Updates");
-  Settings  *Settings_       = this->Settings_;
-  Tensor3Blob *Weight_U        = &(this->Weight_U);
-  Tensor3Blob *Weight_U_diff     = &(this->Weight_U_Diff);
+  Settings  *Settings_               = this->Settings_;
+  Tensor3Blob *Weight_U              = &(this->Weight_U);
+  Tensor3Blob *Weight_U_diff         = &(this->Weight_U_Diff);
   Tensor3Blob *Weight_U_DiffSq_Cache = &(this->Weight_U_DiffSq_Cache);
-  int n_dimension_B          = Settings_->StageOne_Dimension_B;
-  int n_dimension_C          = Settings_->StageOne_Dimension_C;
-  int n_dimension_A          = Settings_->Dimension_A;
-  int n_MiniBatchSize        = Settings_->StageOne_MiniBatchSize;
+  int n_dimension_B                  = Settings_->StageOne_Dimension_B;
+  int n_dimension_C                  = Settings_->StageOne_Dimension_C;
+  int n_dimension_A                  = Settings_->Dimension_A;
+  int n_MiniBatchSize                = Settings_->StageOne_MiniBatchSize;
 
-  float cum_sum_first_der      = 0.;
-  float weight_update        = 0.;
-  float weight_new           = 0.;
-  float adaptive_learning_rate     = 0.;
+  float cum_sum_first_der            = 0.;
+  float weight_update                = 0.;
+  float weight_new                   = 0.;
+  float adaptive_learning_rate       = 0.;
 
-  float weight_old           = 0.;
+  float weight_old                   = 0.;
 
   assert(Settings_->StageOne_Weight_U_RegularizationType == 1 or Settings_->StageOne_Weight_U_RegularizationType == 2 or Settings_->StageOne_Weight_U_RegularizationType == 3);
 

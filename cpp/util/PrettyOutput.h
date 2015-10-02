@@ -26,4 +26,15 @@ void PrintTimeElapsedSince(high_resolution_clock::time_point start_time, const s
 
 string StringPadding(string original, int charCount);
 
+template <typename T>
+void PrintContentsOfVector(const vector<T>& vec) {
+  cout << "Vector of size " << vec.size() << endl;
+  for (int i = 0; i < vec.size(); ++i)
+  {
+    cout << vec[i] << " ";
+  }
+  cout << endl;
+}
+
+
 #endif
