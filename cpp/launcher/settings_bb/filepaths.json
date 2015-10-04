@@ -9,5 +9,6 @@
 
 "LogFolder"                     : "/tmp/robust_multitask_logs",
 "LogFile_Loss"                  : "/logfile_loss",
-"LogFile_CellEntropy"           : "/logfile_cell_entropy"
+"LogFile_CellEntropy"           : "/logfile_cell_entropy",
+"LogFile_Probabilities"         : "/logfile_grad_distribution"
 }

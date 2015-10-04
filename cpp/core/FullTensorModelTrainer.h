@@ -52,7 +52,6 @@ using namespace std;
 class FullTensorModelTrainer : public Trainer {
 
 public:
-  SpatialEntropy spatial_entropy;
 
   // These are parameters to be learned
   Tensor3Blob Weight_U;
@@ -81,10 +80,10 @@ public:
                          GroundTruthLabel *aGroundTruthLabelsTestWeak_,
                          Settings *aSettings_,
                          CurrentStateBlob *aCurrentStateBlob_) : \
-  spatial_entropy(aSettings_->StageOne_Dimension_B,
-                         aSettings_->SpatialEntropy_NumberOfBins,
-                         aSettings_->SpatialEntropy_MinValue,
-                         aSettings_->SpatialEntropy_MaxValue) {
+            Trainer(aSettings_->StageOne_Dimension_B,
+                   aSettings_->SpatialEntropy_NumberOfBins,
+                   aSettings_->SpatialEntropy_MinValue,
+                   aSettings_->SpatialEntropy_MaxValue) {
 
     // Tell ThreeMatrixFactorTrainer where the loaded data sits
     IOController_                    = aIOController_;
@@ -190,8 +189,6 @@ public:
 
   void  ComputeBias_A_Update(int thread_id, int index_A, int frame_id, int ground_truth_label);
   void  ProcessBias_A_Updates(int thread_id, int index_A);
-
-  void  ComputeSpatialEntropy(int thread_id, int index_A, int frame_id, int ground_truth_label);
 
   void  Load_SnapshotWeights(string weights_snapshot_file, string momentum_snapshot_file);
 

@@ -45,7 +45,7 @@
   "StageOne_ResetMomentumEveryNthEpoch"         : 5,
   "StageOne_StartFromCrossValRun"               : 0,
   "StageOne_StartFromEpoch"                     : 0,
-  "StageOne_StartingLearningRate"               : 0.1,
+  "StageOne_StartingLearningRate"               : 0.01,
   "StageOne_StatusEveryNBatchesTrain"           : 100,
   "StageOne_StatusEveryNBatchesValid"           : 25,
   "StageOne_Take_SnapshotAfterEveryNthEpoch"    : 1,

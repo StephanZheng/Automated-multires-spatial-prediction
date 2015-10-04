@@ -21,23 +21,15 @@ void SpatialEntropy::init(int n_spatial_cells, int n_bins, float min_value, floa
   name = "SpatialEntropy_" + to_string(n_spatial_cells) + "bins";
 
   // Every spatial cell has a histogram associated to it.
-  histograms_float_.resize(n_spatial_cells);
-  histograms_sign_.resize(n_spatial_cells);
+  histograms_.resize(n_spatial_cells);
 
   // Initialize all histograms.
   // Note: for(auto histogram : histograms) creates an ephemeral copy, not a reference!
   int kk = 0;
-  for (int i = 0; i < histograms_float_.size(); i++) {
-    histograms_float_[i].histogram_.name = "Histogram_float_cell" + to_string(kk);
-    histograms_float_[i].init(n_bins, min_value, max_value, bin_width);
-    histograms_float_[i].DisableDebugMode();
-    kk++;
-  }
-  kk = 0;
-  for (int i = 0; i < histograms_sign_.size(); i++) {
-    histograms_sign_[i].histogram_.name = "Histogram_sign_cell" + to_string(kk);
-    histograms_sign_[i].init(2, -1., 1., 1.);
-    histograms_sign_[i].DisableDebugMode();
+  for (int i = 0; i < histograms_.size(); i++) {
+    histograms_[i].histogram_.name = "Histogram_float_cell" + to_string(kk);
+    histograms_[i].init(n_bins, min_value, max_value, bin_width);
+    histograms_[i].DisableDebugMode();
     kk++;
   }
 
@@ -46,39 +38,30 @@ void SpatialEntropy::init(int n_spatial_cells, int n_bins, float min_value, floa
   cell_entropy_.name = "cell_entropy";
 }
 
-
 void SpatialEntropy::AddGradientToHistogram(int cell_index, float gradient) {
   // We have n_spatial_cells
-  TEST_LT(cell_index, (int)histograms_float_.size());
+  TEST_LT(cell_index, (int)histograms_.size());
   if (debug_mode) PrintFancy() << name << "::AddGradientToSpatialEntropy cell " << cell_index << " grad " << gradient << endl;
-  if (cell_index >= 0 and cell_index < histograms_float_.size()){
-    histograms_float_[cell_index].Add(gradient);
-  }
-}
-void SpatialEntropy::AddGradientSignToHistogram(int cell_index, float gradient) {
-  TEST_LT(cell_index, (int)histograms_sign_.size());
-  if (debug_mode) PrintFancy() << name << "::AddGradientSignToSpatialEntropy cell " << cell_index << " grad " << gradient << endl;
-  if (cell_index >= 0 and cell_index < histograms_sign_.size()){
-    histograms_sign_[cell_index].Add(gradient);
+  if (cell_index >= 0 and cell_index < histograms_.size()){
+    histograms_[cell_index].Add(gradient);
   }
 }
 
-void SpatialEntropy::ComputeEmpiricalDistribution(std::vector<Histogram> histograms) {
-  for (int cell_index = 0; cell_index < histograms.size(); cell_index++) {
-    histograms[cell_index].ComputeProbabilities();
+void SpatialEntropy::ComputeEmpiricalDistribution() {
+  for (int cell_index = 0; cell_index < histograms_.size(); cell_index++) {
+    histograms_[cell_index].ComputeProbabilities();
+  }
+}
+void SpatialEntropy::ComputeSpatialEntropy() {
+  for (int cell_index = 0; cell_index < histograms_.size(); cell_index++) {
+    histograms_[cell_index].ComputeEntropy();
   }
 }
 
-void SpatialEntropy::ComputeSpatialEntropy(std::vector<Histogram> histograms) {
-  for (int cell_index = 0; cell_index < histograms.size(); cell_index++) {
-    histograms[cell_index].ComputeEntropy();
-  }
-}
-
-float SpatialEntropy::GetAverageSpatialEntropy(const std::vector<Histogram>& histograms) {
+float SpatialEntropy::GetAverageSpatialEntropy() {
   float average_entropy = 0.;
-  for (int cell_index = 0; cell_index < histograms.size(); cell_index++) {
-    average_entropy = (average_entropy * cell_index + histograms[cell_index].entropy_.last()) / (cell_index + 1.);
+  for (int cell_index = 0; cell_index < histograms_.size(); cell_index++) {
+    average_entropy = (average_entropy * cell_index + histograms_[cell_index].entropy_.last()) / (cell_index + 1.);
   }
   return average_entropy;
 }

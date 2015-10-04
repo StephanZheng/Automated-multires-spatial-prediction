@@ -65,10 +65,16 @@ void Histogram::ComputeEntropy() {
       entropy += probability * std::log(probability);
     }
   }
-
-  PrintFancy() << histogram_.name << "::Entropy = " << entropy << endl;
   entropy_.push_back(entropy);
-  entropy_.showContents(20, 10);
+  if (debug_mode) {
+    PrintFancy() << histogram_.name << "::Entropy = " << entropy << endl;
+    entropy_.showContents(10, 1);
+  }
+}
+
+float Histogram::ShowEntropy() {
+  PrintFancy() << histogram_.name << "::Entropy = " << entropy_.last() << endl;
+  return entropy_.last();
 }
 
 void Histogram::CheckIsProbability(float probability) {

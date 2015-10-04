@@ -48,9 +48,10 @@ void Settings::loadSettingsJSON(const char * fn_settings_file) {
     if (ss.compare("GroundTruthScoreWeak")                           == 0) GroundTruthScoreWeak = itr->value.GetDouble();
     if (ss.compare("GroundTruthSubFolder")                           == 0) GroundTruthSubFolder = itr->value.GetString();
 
-    if (ss.compare("LogFolder")                           == 0) LogFolder = itr->value.GetString();
-    if (ss.compare("LogFile_Loss")                           == 0) LogFile_Loss = itr->value.GetString();
-    if (ss.compare("LogFile_CellEntropy")                           == 0) LogFile_CellEntropy = itr->value.GetString();
+    if (ss.compare("LogFolder")                                      == 0) LogFolder = itr->value.GetString();
+    if (ss.compare("LogFile_Loss")                                   == 0) LogFile_Loss = itr->value.GetString();
+    if (ss.compare("LogFile_CellEntropy")                            == 0) LogFile_CellEntropy = itr->value.GetString();
+    if (ss.compare("LogFile_Probabilities")                          == 0) LogFile_Probabilities = itr->value.GetString();
 
 
     if (ss.compare("LossWeightStrong")                               == 0) LossWeightStrong = itr->value.GetDouble();

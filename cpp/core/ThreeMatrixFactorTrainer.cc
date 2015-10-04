@@ -1,29 +1,5 @@
 // Copyright 2014 Stephan Zheng
 
-#include <boost/chrono.hpp>
-#include <boost/timer.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/numeric/ublas/matrix_sparse.hpp>
-#include <boost/numeric/ublas/vector.hpp>
-#include <boost/numeric/ublas/io.hpp>
-#include <boost/thread.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/math/special_functions/fpclassify.hpp> // isnan
-#include <chrono>
-#include <random>
-#include <stdio.h>
-#include <time.h>
-#include <math.h>
-#include <cstdio>
-#include <algorithm>
-#include <iterator>
-#include <vector>
-#include <string>
-#include <queue>
-#include <assert.h>
-#include <sstream>
-#include <fstream>
-
 #include "core/ThreeMatrixFactorTrainer.h"
 
 using namespace std;
@@ -397,7 +373,6 @@ void ThreeMatrixFactorTrainer::InitializeWeightsRandom(float range_W, float rang
   }
   Bias_A->initRandom(range_A);
 }
-
 void ThreeMatrixFactorTrainer::StoreStartingWeights() {
   PrintFancy(Settings_->session_start_time, "Storing weight snapshots");
   Settings *Settings_      = this->Settings_;
@@ -460,33 +435,61 @@ void ThreeMatrixFactorTrainer::RestoreStartingWeights() {
   // }
 }
 int ThreeMatrixFactorTrainer::TrainStageThree(string fp_snapshot) {
-  Settings      *Settings_    = this->Settings_;
-  CurrentStateBlob  *CurrentStateBlob = this->CurrentStateBlob_;
+  Settings      *Settings_                     = this->Settings_;
+  CurrentStateBlob  *CurrentStateBlob          = this->CurrentStateBlob_;
 
-  MatrixBlob      *LF_A       = &this->LF_A;
-  MatrixBlob      *LF_B       = &this->LF_B;
-  MatrixBlob      *LF_C       = &this->LF_C;
-  Tensor3Blob     *Sparse_S     = &this->Sparse_S;
-  VectorBlob      *Bias_A       = &this->Bias_A;
+  MatrixBlob      *LF_A                        = &this->LF_A;
+  MatrixBlob      *LF_B                        = &this->LF_B;
+  MatrixBlob      *LF_C                        = &this->LF_C;
+  Tensor3Blob     *Sparse_S                    = &this->Sparse_S;
+  VectorBlob      *Bias_A                      = &this->Bias_A;
 
-  MatrixBlob      *LF_A_Diff    = &this->LF_A_Diff;
-  MatrixBlob      *LF_B_Diff    = &this->LF_B_Diff;
-  MatrixBlob      *SLF_B_Diff     = &this->SLF_B_Diff;
-  MatrixBlob      *LF_C_Diff    = &this->LF_C_Diff;
-  Tensor3Blob     *Sparse_S_Diff  = &this->Sparse_S_Diff;
-  VectorBlob      *Bias_A_Diff    = &this->Bias_A_Diff;
+  MatrixBlob      *LF_A_Diff                   = &this->LF_A_Diff;
+  MatrixBlob      *LF_B_Diff                   = &this->LF_B_Diff;
+  MatrixBlob      *SLF_B_Diff                  = &this->SLF_B_Diff;
+  MatrixBlob      *LF_C_Diff                   = &this->LF_C_Diff;
+  Tensor3Blob     *Sparse_S_Diff               = &this->Sparse_S_Diff;
+  VectorBlob      *Bias_A_Diff                 = &this->Bias_A_Diff;
 
-  std::vector<int>  *RandomizedIterator    = &this->RandomizedIterator;
-  std::vector<float>  *NestorovMomentumLambda_   = &this->NestorovMomentumLambda;
+  std::vector<int>  *RandomizedIterator        = &this->RandomizedIterator;
+  std::vector<float>  *NestorovMomentumLambda_ = &this->NestorovMomentumLambda;
 
-  int * have_recorded_a_trainloss   = new int;
-  *have_recorded_a_trainloss    = 0;
+  int * have_recorded_a_trainloss = new int;
+  *have_recorded_a_trainloss      = 0;
 
-  int exit_code           = 0;
-  int spcheck_exit_training     = 0;
+  int exit_code                   = 0;
+  int spcheck_exit_training       = 0;
   int spcheck_restart_training    = 0;
 
-  CurrentStateBlob->current_stage   = 3;
+  CurrentStateBlob->current_stage = 3;
+
+
+
+
+  // Debug mode?
+  if (Settings_->EnableDebugPrinter_Level1 == 1) {
+    EnableDebugMode();
+    spatial_entropy.EnableDebugMode();
+  } else {
+    DisableDebugMode();
+    spatial_entropy.DisableDebugMode();
+  }
+
+  // Log files for this session
+  string logfile_suffix = "_3factor" + to_string(Settings_->StageThree_Dimension_B) + "_" + to_string(CurrentStateBlob_->session_id);
+  // Loss
+  string logfile_loss_filename = Settings_->LogFolder + Settings_->LogFile_Loss + logfile_suffix;
+  IOController_->OpenNewFile(logfile_loss_filename);
+
+  // Entropy
+  string logfile_entropy_filename = Settings_->LogFolder + Settings_->LogFile_CellEntropy + logfile_suffix;
+  IOController_->OpenNewFile(logfile_entropy_filename);
+
+  // probs
+  string logfile_probs_filename = Settings_->LogFolder + Settings_->LogFile_Probabilities + logfile_suffix;
+  IOController_->OpenNewFile(logfile_probs_filename);
+
+
 
   // Set the correct number of threads to use in generateTrainingBatches -- this is a slight hack
   Settings_->CurrentNumberOfThreads = Settings_->StageThree_NumberOfThreads;
@@ -782,6 +785,32 @@ int ThreeMatrixFactorTrainer::TrainStageThree(string fp_snapshot) {
           task_queue_.waitForTasksToComplete(n_threads_commanded_this_batch);
         }
 
+
+
+
+
+
+        // ------------------------------------------------------------------------------------------------------------------------------
+        // Compute spatial entropy of gradients
+        // ------------------------------------------------------------------------------------------------------------------------------
+        // Add gradients of minibatch to histogram -- this is paralellized
+        n_threads_commanded_this_batch = this->generateTrainingBatches(20, batch, n_batches, n_datapoints_processed_so_far_this_epoch, Settings_->StageThree_MiniBatchSize);
+        task_queue_.waitForTasksToComplete(n_threads_commanded_this_batch);
+
+        // Compute entropy of accumulated gradients so far.
+        // TODO(stz): implement streaming version of this: how to deal with renormalization per update?
+        spatial_entropy.ComputeEmpiricalDistribution();
+        spatial_entropy.ComputeSpatialEntropy();
+        spatial_entropy.LogToFile(Settings_->session_start_time, logfile_probs_filename, logfile_entropy_filename);
+
+        if (debug_mode and batch % 100 == 0) {
+          spatial_entropy.ShowEntropies();
+        }
+
+
+
+
+
         // ====================================================================================
         // Apply momentum
         if (batch % Settings_->StageThree_ApplyMomentumEveryNthMinibatch == 0) this->ApplyNestorovMomentum(batch);
@@ -876,7 +905,7 @@ int ThreeMatrixFactorTrainer::TrainStageThree(string fp_snapshot) {
         n_batches_served++;
       }
 
-      this->PrintTimeElapsedSince(start_time_epoch, "Batch train-time: ");
+      PrintTimeElapsedSince(start_time_epoch, "Batch train-time: ");
 
       // If a blow-up was detected OR sparsity was too fast, weights were reset and we skip the loss computations
       if (global_reset_training == 1 or spcheck_restart_training == 1) {
@@ -956,7 +985,7 @@ int ThreeMatrixFactorTrainer::TrainStageThree(string fp_snapshot) {
         cout << " -- prev: " << setprecision(PRINT_FLOAT_PRECISION_LOSS) << Settings_->StageOne_LossValidPreviousEpoch;
         cout << " -- delta: " << setprecision(PRINT_FLOAT_PRECISION_LOSS) << loss_valid - Settings_->StageOne_LossValidPreviousEpoch;
         cout << endl;
-        this->PrintTimeElapsedSince(start_time_loss_compute, "Loss compute-time: ");
+        PrintTimeElapsedSince(start_time_loss_compute, "Loss compute-time: ");
         PrintDelimiter(1, 1, 80, '=');
 
 
@@ -973,6 +1002,16 @@ int ThreeMatrixFactorTrainer::TrainStageThree(string fp_snapshot) {
         // ====================================================================================
 
         if (this->DecisionUnit(cross_val_run, epoch, loss_train, loss_valid, loss_test, have_recorded_a_trainloss) == 0) break;
+
+
+        // -------------------------------------------------------------------------------------------------
+        // Write losses to log-file
+        // -------------------------------------------------------------------------------------------------
+        IOController_->WriteToFile(logfile_loss_filename, to_string(GetTimeElapsedSince(Settings_->session_start_time)) + ",");
+        IOController_->WriteToFile(logfile_loss_filename, to_string(loss_train) + ",");
+        IOController_->WriteToFile(logfile_loss_filename, to_string(loss_valid) + "\n");
+        // -------------------------------------------------------------------------------------------------
+
       }
 
       // Take a snapshot - store the learned parameters
@@ -988,8 +1027,12 @@ int ThreeMatrixFactorTrainer::TrainStageThree(string fp_snapshot) {
       }
 
 
+      // Show Entropy summary.
+      spatial_entropy.ShowSummary();
+      // ------------------------------------------------------------------------------------------------
+      // End of epoch
+      // ------------------------------------------------------------------------------------------------
       // Loss did not below threshold, but we hit the max #epochs
-      // ====================================================================================
       if (epoch == Settings_->StageThree_NumberOfEpochs - 1) PrintFancy(Settings_->session_start_time, "Maximal number of epochs reached, but not all loss thresholds reached... continuing to next xval-run.");
 
       // Go to the next epoch
@@ -1032,7 +1075,6 @@ int ThreeMatrixFactorTrainer::TrainStageThree(string fp_snapshot) {
   PrintFancy(Settings_->session_start_time, "Workers are all done -- end of Stage 3.");
   return 0;
 }
-
 int ThreeMatrixFactorTrainer::DecisionUnit(int cross_val_run, int epoch, float loss_train, float loss_valid, float loss_test, int * have_recorded_a_trainloss){
 
   Settings *Settings_ = this->Settings_;
@@ -1140,8 +1182,6 @@ int ThreeMatrixFactorTrainer::DecisionUnit(int cross_val_run, int epoch, float l
 
   return 1;
 }
-
-
 void ThreeMatrixFactorTrainer::ThreadComputer(int thread_id) {
   Settings *Settings_ = this->Settings_;
   int MiniBatchSize   = Settings_->StageThree_MiniBatchSize;
@@ -1231,6 +1271,14 @@ void ThreeMatrixFactorTrainer::ThreadComputer(int thread_id) {
         this->ProcessSLF_B_Updates(thread_id, task.index_A);
       }
 
+      if (task.task_type == 20) {
+        this->ComputeSpatialEntropy(thread_id, task.index_A, task.frame_id, task.ground_truth_label,
+          Settings_->StageThree_Dimension_B,
+          Settings_->StageThree_Dimension_C,
+          1.0,
+          Settings_->StageThree_MiniBatchSize);
+      }
+
       // 6 = train-loss
       // 7 = valid-loss
       // 8 = test -loss
@@ -1253,7 +1301,6 @@ void ThreeMatrixFactorTrainer::ThreadComputer(int thread_id) {
   }
   return;
 }
-
 void ThreeMatrixFactorTrainer::DebuggingTestProbe(int thread_id, int index_A, int frame_id, int ground_truth_label, int index) {
   // Settings     *Settings_   = this->Settings_;
   // MatrixBlob *WeightW = &(this->WeightW);
@@ -1384,9 +1431,6 @@ void ThreeMatrixFactorTrainer::ApplyNestorovMomentum(int batch) {
   }
 }
 
-
-
-
 // Compute for update C
 inline float ThreeMatrixFactorTrainer::ComputeProductPsiPsiAB(int thread_id, int frame_id, int index_A, int latent_index, MatrixBlob *LF_A, MatrixBlob *LF_B, std::vector<int> *indices_B) {
 
@@ -1448,10 +1492,6 @@ inline float ThreeMatrixFactorTrainer::ComputeProductPsiPsiBC(int thread_id, int
 
   return sum;
 }
-
-
-
-
 inline float ThreeMatrixFactorTrainer::ComputeProductSC(int thread_id,
   int frame_id,
   int index_A,
@@ -1473,7 +1513,6 @@ inline float ThreeMatrixFactorTrainer::ComputeProductSC(int thread_id,
 
   return sum;
 }
-
 inline float ThreeMatrixFactorTrainer::ComputeProductSB(int thread_id,
   int frame_id,
   int index_A,
@@ -1495,7 +1534,6 @@ inline float ThreeMatrixFactorTrainer::ComputeProductSB(int thread_id,
 
   return sum;
 }
-
 inline float ThreeMatrixFactorTrainer::ComputeProductSBC(
                       int thread_id,
                       int index_A,
@@ -2363,7 +2401,6 @@ inline void ThreeMatrixFactorTrainer::ComputeLF_C_Update(int thread_id, int inde
     this->ComputeLF_C_Update_Core(thread_id, index_A, frame_id, ground_truth_label, &indices_BB, &indices_CC, 2);
   }
 }
-
 inline int getIndexFirstNonNegative(std::vector<int> *indices_C){
   // We sorted the defender occupancy feature already. Now look for first defender location that is not -1
 
@@ -2381,7 +2418,6 @@ inline int getIndexFirstNonNegative(std::vector<int> *indices_C){
   }
   return index_C_ptr - 1;
 }
-
 
 inline void ThreeMatrixFactorTrainer::ComputeLF_C_Update_Core(int thread_id, int index_A, int frame_id, int ground_truth_label, std::vector<int> *indices_B, std::vector<int> *indices_C, int SpatRegLevel) {
 

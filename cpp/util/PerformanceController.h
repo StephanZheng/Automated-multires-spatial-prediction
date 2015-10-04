@@ -3,6 +3,7 @@
 #ifndef PERFORMANCECONTROLLER_H
 #define PERFORMANCECONTROLLER_H
 
+#include <boost/timer.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/numeric/ublas/matrix_sparse.hpp>
 #include <boost/numeric/ublas/vector.hpp>
@@ -32,6 +33,22 @@
 #include "util/CurrentStateBlob.h"
 #include "util/PrettyOutput.h"
 
+using namespace boost;
+using namespace std::chrono;
+using std::chrono::high_resolution_clock;
+using std::chrono::duration;
+using std::chrono::duration_cast;
+
+static int GetTimeElapsedSince(high_resolution_clock::time_point start_time){
+  high_resolution_clock::time_point now = high_resolution_clock::now();
+  int delta_t = (duration_cast<duration<double> >(now - start_time)).count();
+  return delta_t;
+}
+
+static void PrintTimeElapsedSince(high_resolution_clock::time_point start_time, string message){
+  PrintFancy(start_time, message + " :: " + to_string(GetTimeElapsedSince(start_time)) + " seconds");
+}
+
 class PerformanceController {
   Settings *Settings_;
 
@@ -40,9 +57,9 @@ class PerformanceController {
     Settings_ = aSettings_;
   }
 
-  void showTimeElapsed(chrono::high_resolution_clock::time_point start_time) {
-    chrono::high_resolution_clock::time_point now = chrono::high_resolution_clock::now();
-    chrono::duration<double> time_span = chrono::duration_cast<chrono::duration<double> >(now - start_time);
+  void showTimeElapsed(high_resolution_clock::time_point start_time) {
+    high_resolution_clock::time_point now = high_resolution_clock::now();
+    duration<double> time_span = duration_cast<duration<double> >(now - start_time);
     PrintFancy(Settings_->session_start_time, "Runtime: " + to_string(time_span.count()) + " seconds");
   }
 

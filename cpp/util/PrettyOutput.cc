@@ -117,10 +117,10 @@ void PrintWithDelimiters(const string& message) {
   PrintDelimiter(1, 1, 80, '=');
 }
 
-void PrintTimeElapsedSince(high_resolution_clock::time_point start_time, const string& message){
-  high_resolution_clock::time_point now = high_resolution_clock::now();
-  PrintFancy(start_time, message + " :: " + to_string((chrono::duration_cast<chrono::duration<double> >(now - start_time)).count()) + " seconds");
-}
+// void PrintTimeElapsedSince(high_resolution_clock::time_point start_time, const string& message){
+//   high_resolution_clock::time_point now = high_resolution_clock::now();
+//   PrintFancy(start_time, message + " :: " + to_string((chrono::duration_cast<chrono::duration<double> >(now - start_time)).count()) + " seconds");
+// }
 
 string StringPadding(string original, int charCount ) {
   if (charCount > original.size()) {

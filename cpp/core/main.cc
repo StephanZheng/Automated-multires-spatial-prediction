@@ -79,7 +79,6 @@ int main(int argc, char *argv[]) {
   high_resolution_clock::time_point start_time = high_resolution_clock::now();
   Settings *Settings_                          = new Settings;
   Settings_->session_start_time                = start_time;
-  cout << "Help!";
   PerformanceController PerformanceController_(Settings_);
 
   PrintWithDelimiters(Settings_->session_start_time, _SCRIPTTITLE);

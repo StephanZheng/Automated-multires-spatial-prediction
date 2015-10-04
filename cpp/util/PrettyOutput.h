@@ -23,7 +23,7 @@ template <typename T>
 void PrintFancy(const T& message);
 void PrintWithDelimiters(high_resolution_clock::time_point session_start_time, const string& message);
 void PrintWithDelimiters(const string& message);
-void PrintTimeElapsedSince(high_resolution_clock::time_point start_time, const string& message);
+// void PrintTimeElapsedSince(high_resolution_clock::time_point start_time, const string& message);
 
 extern std::ostream& PrintFancy();
 

@@ -52,6 +52,8 @@ public:
   void EnableDebugMode() {debug_mode = true;};
   void DisableDebugMode() {debug_mode = false;};
 
+  SpatialEntropy spatial_entropy;
+
   int         CheckIfFloatIsNan(float x, string y);
 
   // Pointers to settings / IOController that are needed by all stages of training
@@ -96,7 +98,6 @@ public:
   MatrixBlob      ConditionalScore;
 
   // Store computed losses
-protected:
   std::vector<float>  Results_LossTrain;
   std::vector<float>  Results_LossValid;
   std::vector<float>  Results_LossTest;
@@ -115,10 +116,23 @@ protected:
   int _dummy_index_A_to_test_mt;
 
   Trainer() {}
+  Trainer(int dima, int bins, float minval, float maxval) :
+    spatial_entropy(dima,
+                    bins,
+                    minval,
+                    maxval) {
+  }
+
+  void ComputeSpatialEntropy(int thread_id,
+                              int index_A,
+                              int frame_id,
+                              int ground_truth_label,
+                              int n_dimension_B, //           = Settings_->StageOne_Dimension_B;
+                              int n_dimension_C, //          = Settings_->StageOne_Dimension_C;
+                              float dresponsefunction_dB,
+                              int MiniBatchSize);
 
   int         GetExpectedSizeSnapshotFile(Settings * s);
-
-  void        PrintTimeElapsedSince(high_resolution_clock::time_point start_time, string message);
 
   void        PermuteTrainValIndices();
 

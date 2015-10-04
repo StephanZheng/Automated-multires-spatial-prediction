@@ -729,7 +729,6 @@ float Trainer::getGradient(VectorBlob * blob, int index) {
     return blob->at(index) - blob->at(index - 1);
   } else return 0.;
 }
-
 void Trainer::printDecision(MatrixBlob * blob, int col_lo, int col_hi, float sparsity_level, float running_average, float gradient_curr, float gradient_prev, int exit_code, string message) {
   Settings *Settings_   = this->Settings_;
   int total = (col_hi - col_lo) * blob->rows;
@@ -741,7 +740,6 @@ void Trainer::printDecision(MatrixBlob * blob, int col_lo, int col_hi, float spa
   PrintFancy(Settings_->session_start_time, "[SparsityTuning " + blob->name + "] Decision:  " + message + " | Exit-code: " + to_string(exit_code));
   cout << endl;
 }
-
 void Trainer::checkSparsity(MatrixBlob *blob, VectorBlob * sp_lvls, VectorBlob * sp_nonzeros, int col_lo, int col_hi) {
   Settings *Settings_   = this->Settings_;
   float sparsity_level  = 1.;
@@ -755,9 +753,7 @@ void Trainer::checkSparsity(MatrixBlob *blob, VectorBlob * sp_lvls, VectorBlob *
   // Store results
   sp_lvls->push_back(sparsity_level);
   sp_nonzeros->push_back(sparsity_level * (col_hi - col_lo) * blob->rows);
-
 }
-
 int Trainer::tuneSparsityCore(MatrixBlob * blob, VectorBlob * sp_lvls, VectorBlob * sp_nonzeros, int col_lo, int col_hi){
   Settings *Settings_   = this->Settings_;
   float sparsity_level  = 1.;
@@ -826,7 +822,6 @@ int Trainer::tuneSparsityCore(MatrixBlob * blob, VectorBlob * sp_lvls, VectorBlo
 
   return exit_code;
 }
-
 int Trainer::tuneSparsity(MatrixBlob * blob, int subdim){
 
   Settings *Settings_  = this->Settings_;
@@ -844,7 +839,6 @@ int Trainer::tuneSparsity(MatrixBlob * blob, int subdim){
 
   return exit_code;
 }
-
 void Trainer::tuneSparsityLevel(int batch, MatrixBlob * blob, int factor, int subdim) {
 
   float old_reg = 0.;
@@ -883,7 +877,6 @@ void Trainer::tuneSparsityLevel(int batch, MatrixBlob * blob, int factor, int su
   cout << " [SparsityTuning " << blob->name << "] Tuning: ";
   cout << old_reg << " --> " << old_reg * TUNE_SPARSITY_FACTOR << " -- tuning factor: " << TUNE_SPARSITY_FACTOR << endl;
 }
-
 int Trainer::tuneSparsityAll(int batch, MatrixBlob * LF_A, MatrixBlob * LF_B, MatrixBlob * LF_C) {
 
   Settings *Settings_ = this->Settings_;
@@ -961,7 +954,6 @@ float Trainer::boundScore(int frame_id, float score) {
     return score;
   }
 }
-
 float Trainer::ComputeLossCore(std::vector<int> * WeakIndices, std::vector<int> * StrongIndices) {
 
   MatrixBlob     *ConditionalScore         = &(this->ConditionalScore);
@@ -1117,11 +1109,6 @@ void Trainer::UpdateTruncatedLassoWindow(int batch){
         Settings_->TruncatedLasso_Window_UpdateFrequency);
 }
 
-void Trainer::PrintTimeElapsedSince(high_resolution_clock::time_point start_time, string message){
-  high_resolution_clock::time_point now = high_resolution_clock::now();
-  PrintFancy(Settings_->session_start_time, message + " :: " + to_string((duration_cast<duration<double> >(now - start_time)).count()) + " seconds");
-}
-
 FILE * Trainer::LoadFile(string fn, int expected_floats_in_file, int n_seek_float) {
   FILE * fp;
   fp = fopen(fn.c_str() , "rb");
@@ -1221,8 +1208,6 @@ int Trainer::GetExpectedSizeSnapshotFile(Settings * s){
   }
   // return Settings_->Dimension_A * Settings_->StageOne_Dimension_B * Settings_->StageOne_Dimension_C + Settings_->Dimension_A;
 }
-
-
 float Trainer::cap(int thread_id, int index_A, int frame_id, float score, float cap_hi, float cap_lo) {
   Settings  *Settings_    = this->Settings_;
   if (score > cap_hi) {
@@ -1237,5 +1222,43 @@ float Trainer::cap(int thread_id, int index_A, int frame_id, float score, float 
     return cap_lo;
   } else {
     return score;
+  }
+}
+
+void Trainer::ComputeSpatialEntropy(int thread_id,
+  int index_A,
+  int frame_id,
+  int ground_truth_label,
+  int n_dimension_B, //           = Settings_->StageOne_Dimension_B;
+  int n_dimension_C, //          = Settings_->StageOne_Dimension_C;
+  float dresponsefunction_dB,
+  int MiniBatchSize // = Settings_->StageOne_MiniBatchSize
+  ) {
+  MatrixBlob *ConditionalScore = &(this->ConditionalScore);
+  float strongweakweight       = 0.;
+  float dP_df                  = 0.;
+  float U_gradient             = 0.;
+  float ExponentialScore       = ConditionalScore->at(frame_id, index_A % Settings_->ScoreFunctionColumnIndexMod);
+  float df_dB                  = dresponsefunction_dB;
+
+  if (ground_truth_label == 0) {
+    strongweakweight = Settings_->LossWeightWeak;
+    dP_df = 1.0 / ( 1.0 + exp(-ExponentialScore) );
+  } else {
+    assert(ground_truth_label == 1);
+    strongweakweight = Settings_->LossWeightStrong;
+    dP_df = -1.0 / ( 1.0 + exp(ExponentialScore) );
+  }
+
+  std::vector<int> indices_B = this->getIndices_B(frame_id, 1);
+  std::vector<int> indices_C = this->getIndices_C(frame_id, 1);
+
+  U_gradient = strongweakweight * dP_df * df_dB / MiniBatchSize;
+
+  // Process all positions in this feature vector
+  // Watch out: our position features have a stop token in the last slot, which we should *NOT* process!
+  for (int i = 0; i < indices_B.size() - 1; i++) {
+    int index_B = indices_B[i];
+    spatial_entropy.AddGradientToHistogram(index_B, U_gradient);
   }
 }

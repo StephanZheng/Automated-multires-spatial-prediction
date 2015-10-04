@@ -148,6 +148,7 @@ public:
   string LogFolder;
   string LogFile_Loss;
   string LogFile_CellEntropy;
+  string LogFile_Probabilities;
 
 
 

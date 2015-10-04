@@ -87,9 +87,10 @@ public:
     cout << column << " / " << columns << " | data.size() = " << data.size() << endl;
   }
   void showContents(int limit, int modulo) {
+    PrintFancy() << "VectorBlob showContents";
     for (int i = 0; i < data.size(); ++i) {
       if (i < limit and i % modulo == 0) {
-        cout << setprecision(20) << "Index " << i << " : " << data[i] << endl;
+        cout << setprecision(20) << " [" << i << "]: " << data[i] << endl;
       }
       if (i > limit) {
         break;

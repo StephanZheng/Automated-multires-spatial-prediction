@@ -42,10 +42,7 @@
 
 using namespace std;
 
-
 class ThreeMatrixFactorTrainer : public Trainer {
-
-  friend class SpatialEntropy;
 
   public:
   // These are parameters to be learned
@@ -111,35 +108,39 @@ class ThreeMatrixFactorTrainer : public Trainer {
             GroundTruthLabel *aGroundTruthLabelsTrainValWeak_,
             GroundTruthLabel *aGroundTruthLabelsTestWeak_,
             Settings *aSettings_,
-            CurrentStateBlob *aCurrentStateBlob_){
+            CurrentStateBlob *aCurrentStateBlob_) : \
+          Trainer(aSettings_->StageThree_Dimension_B,
+                  aSettings_->SpatialEntropy_NumberOfBins,
+                  aSettings_->SpatialEntropy_MinValue,
+                  aSettings_->SpatialEntropy_MaxValue) {
 
     // Temp
-    bh_outofbounds_counter = 0;
+    bh_outofbounds_counter           = 0;
 
     // Tell ThreeMatrixFactorTrainer where the loaded data sits
-    IOController_          = aIOController_;
-    Blob_B_              = aBlob_B_;
-    Blob_BB_             = aBlob_BB_;
-    Blob_BTransposed_        = aBlob_BTransposed_;
-    Blob_C_              = aBlob_C_;
-    Blob_CC_             = aBlob_CC_;
-    Blob_CTransposed_        = aBlob_CTransposed_;
+    IOController_                    = aIOController_;
+    Blob_B_                          = aBlob_B_;
+    Blob_BB_                         = aBlob_BB_;
+    Blob_BTransposed_                = aBlob_BTransposed_;
+    Blob_C_                          = aBlob_C_;
+    Blob_CC_                         = aBlob_CC_;
+    Blob_CTransposed_                = aBlob_CTransposed_;
     GroundTruthLabelsTrainValStrong_ = aGroundTruthLabelsTrainValStrong_;
-    GroundTruthLabelsTestStrong_   = aGroundTruthLabelsTestStrong_;
+    GroundTruthLabelsTestStrong_     = aGroundTruthLabelsTestStrong_;
     GroundTruthLabelsTrainValWeak_   = aGroundTruthLabelsTrainValWeak_;
-    GroundTruthLabelsTestWeak_     = aGroundTruthLabelsTestWeak_;
-    Settings_            = aSettings_;
-    CurrentStateBlob_        = aCurrentStateBlob_;
+    GroundTruthLabelsTestWeak_       = aGroundTruthLabelsTestWeak_;
+    Settings_                        = aSettings_;
+    CurrentStateBlob_                = aCurrentStateBlob_;
 
-    int n_dimension_A        = Settings_->Dimension_A;
-    int n_dimension_B        = Settings_->StageThree_Dimension_B;
-    int n_dimension_C        = Settings_->StageThree_Dimension_C;
+    int n_dimension_A                = Settings_->Dimension_A;
+    int n_dimension_B                = Settings_->StageThree_Dimension_B;
+    int n_dimension_C                = Settings_->StageThree_Dimension_C;
+    int n_latent_dimensions          = Settings_->StageThree_SubDimension_1 + Settings_->StageThree_SubDimension_2;
+    int n_frames                     = Settings_->NumberOfFrames;
+    int n_threads                    = Settings_->StageThree_NumberOfThreads;
 
     assert (Settings_->NumberOfLatentDimensions == Settings_->StageThree_SubDimension_1 + Settings_->StageThree_SubDimension_2);
 
-    int n_latent_dimensions      = Settings_->StageThree_SubDimension_1 + Settings_->StageThree_SubDimension_2;
-    int n_frames           = Settings_->NumberOfFrames;
-    int n_threads          = Settings_->StageThree_NumberOfThreads;
 
     // VectorBlob *ptr_v;
     // MatrixBlob *ptr_m;

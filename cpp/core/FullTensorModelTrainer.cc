@@ -142,18 +142,33 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
   VectorBlob      *Bias_A_Diff                 = &this->Bias_A_Diff;
   std::vector<float>  *NestorovMomentumLambda_ = &this->NestorovMomentumLambda;
 
+  // Debug mode?
   if (Settings_->EnableDebugPrinter_Level1 == 1) {
     EnableDebugMode();
+    spatial_entropy.EnableDebugMode();
   } else {
     DisableDebugMode();
+    spatial_entropy.DisableDebugMode();
   }
 
-  IOController_->OpenNewFile(Settings_->LogFolder + Settings_->LogFile_Loss);
-  IOController_->WriteToFile(Settings_->LogFolder + Settings_->LogFile_Loss, "TEST");
-  // IOController_->AppendToFile(Settings_->LogFolder + Settings_->LogFile_Loss) << "TEST";
+  // Log files for this session
+  // Loss
+  string logfile_suffix = "_full" + to_string(Settings_->StageOne_Dimension_B) + "_" + to_string(CurrentStateBlob_->session_id);
 
-  // spatial_entropy.ShowHistograms();
-  spatial_entropy.DisableDebugMode();
+  string logfile_loss_filename = Settings_->LogFolder + Settings_->LogFile_Loss + logfile_suffix;
+  IOController_->OpenNewFile(logfile_loss_filename);
+  // IOController_->WriteToFile(logfile_loss_filename, "loss_train+loss_valid\n");
+  // Entropy
+  string logfile_entropy_filename = Settings_->LogFolder + Settings_->LogFile_CellEntropy + logfile_suffix;
+  IOController_->OpenNewFile(logfile_entropy_filename);
+  // IOController_->WriteToFile(logfile_entropy_filename, "average_entropy\n");
+
+  // probs
+  string logfile_probs_filename = Settings_->LogFolder + Settings_->LogFile_Probabilities + logfile_suffix;
+  IOController_->OpenNewFile(logfile_probs_filename);
+
+
+
 
   // Set the correct number of threads to use in generateTrainingBatches -- this is a slight hack
   Settings_->CurrentNumberOfThreads = Settings_->StageOne_NumberOfThreads;
@@ -329,9 +344,13 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
 
         // Compute entropy of accumulated gradients so far.
         // TODO(stz): implement streaming version of this: how to deal with renormalization per update?
-        spatial_entropy.ComputeEmpiricalDistribution(spatial_entropy.histograms_float_);
-        spatial_entropy.ComputeSpatialEntropy(spatial_entropy.histograms_float_);
-        PrintFancy() << "Average spatial entropy: " << spatial_entropy.GetAverageSpatialEntropy(spatial_entropy.histograms_float_);
+        spatial_entropy.ComputeEmpiricalDistribution();
+        spatial_entropy.ComputeSpatialEntropy();
+        spatial_entropy.LogToFile(Settings_->session_start_time, logfile_probs_filename, logfile_entropy_filename);
+
+        if (debug_mode and batch % 100 == 0) {
+          spatial_entropy.ShowEntropies();
+        }
 
         // ------------------------------------------------------------------------------------------------------------------------------
         // Apply momentum
@@ -374,7 +393,7 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
         n_batches_served++;
       }
 
-      this->PrintTimeElapsedSince(start_time_epoch, "Batch train-time: ");
+      PrintTimeElapsedSince(start_time_epoch, "Batch train-time: ");
 
       // If a blow-up was detected, weights were reset and we skip the loss computations
       if (global_reset_training == 1) {
@@ -415,8 +434,8 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
         // this->ComputeConditionalScoreSingleThreaded(7);
 
         PrintFancy(Settings_->session_start_time, "ComputeConditionalScore Test");
-        this->ComputeConditionalScoreSingleThreaded(8);
-        this->PrintTimeElapsedSince(start_time_ComputeValidTestSetScores, "Valid / test ExponentialScore compute-time: ");
+        ComputeConditionalScoreSingleThreaded(8);
+        PrintTimeElapsedSince(start_time_ComputeValidTestSetScores, "Valid / test ExponentialScore compute-time: ");
 
         // All ExponentialScores have been computed, so we can compute the loss
 
@@ -446,6 +465,13 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
 
         if (this->DecisionUnit(cross_val_run, epoch, loss_train, loss_valid, loss_test, have_recorded_a_trainloss) == 0) break;
 
+        // -------------------------------------------------------------------------------------------------
+        // Write losses to log-file
+        // -------------------------------------------------------------------------------------------------
+        IOController_->WriteToFile(logfile_loss_filename, to_string(GetTimeElapsedSince(Settings_->session_start_time)) + ",");
+        IOController_->WriteToFile(logfile_loss_filename, to_string(loss_train) + ",");
+        IOController_->WriteToFile(logfile_loss_filename, to_string(loss_valid) + "\n");
+        // -------------------------------------------------------------------------------------------------
       }
 
       // Take a snapshot - store the learned parameters
@@ -684,7 +710,11 @@ void FullTensorModelTrainer::ThreadComputer(int thread_id) {
       }
 
       if (task.task_type == 9) {
-        this->ComputeSpatialEntropy(thread_id, task.index_A, task.frame_id, task.ground_truth_label);
+        this->ComputeSpatialEntropy(thread_id, task.index_A, task.frame_id, task.ground_truth_label,
+          Settings_->StageOne_Dimension_B,
+          Settings_->StageOne_Dimension_C,
+          1.0,
+          Settings_->StageOne_MiniBatchSize);
       }
 
     }
@@ -1115,51 +1145,7 @@ void FullTensorModelTrainer::ProcessBias_A_Updates(int thread_id, int index_A) {
   *(Bias_A->att(index_A)) -= adaptive_learning_rate * Bias_A_Diff->at(index_A);
 }
 
-void FullTensorModelTrainer::ComputeSpatialEntropy(int thread_id, int index_A, int frame_id, int ground_truth_label) {
 
-  MatrixBlob *ConditionalScore = &(this->ConditionalScore);
-  int n_dimension_B            = Settings_->StageOne_Dimension_B;
-  int n_dimension_C            = Settings_->StageOne_Dimension_C;
-  float strongweakweight       = 0.;
-  float factor                 = 0.;
-  float U_gradient             = 0.;
-  float ExponentialScore       = ConditionalScore->at(frame_id, index_A % Settings_->ScoreFunctionColumnIndexMod);
-
-  if (ground_truth_label == 0) {
-    strongweakweight = Settings_->LossWeightWeak;
-    factor = 1.0 / ( 1.0 + exp(-ExponentialScore) );
-  } else {
-    assert(ground_truth_label == 1);
-    strongweakweight = Settings_->LossWeightStrong;
-    factor = -1.0 / ( 1.0 + exp(ExponentialScore) );
-  }
-
-  std::vector<int> indices_B = this->getIndices_B(frame_id, 1);
-  std::vector<int> indices_C = this->getIndices_C(frame_id, 1);
-  assert(indices_C.size() == 1 + Settings_->DummyMultiplier * (Settings_->StageOne_NumberOfNonZeroEntries_C));
-
-  if (Settings_->EnableDebugPrinter_Level2 == 1 and frame_id % 10000 == 0) {
-    cout << "T: " << thread_id << " Frame " << frame_id << " indices_B: ";
-    PrintContentsOfVector<int>(indices_B);
-    cout << "T: " << thread_id << " Frame " << frame_id << " indices_C: ";
-    PrintContentsOfVector<int>(indices_C);
-  }
-
-  U_gradient = strongweakweight * factor / Settings_->StageOne_MiniBatchSize;
-
-  // Process all positions in this feature vector
-  // Watch out: our position features have a stop token in the last slot, which we should *NOT* process!
-  for (int i = 0; i < indices_B.size() - 1; i++) {
-
-    int index_B = indices_B[i];
-    spatial_entropy.AddGradientToHistogram(index_B, U_gradient);
-
-    if (Settings_->EnableDebugPrinter_Level1 and frame_id % 5000000 == 0 and index_B % 100 == 0 and U_gradient > 0) {
-      cout << setw(15) << setprecision(10) << "Debug spatial entropy of gradients -- T: " << thread_id << " Frame " << frame_id << " index_B " << index_B << endl;
-      cout << setw(15) << setprecision(10) << " U_gradient "  << U_gradient << " factor " << factor << endl;
-    }
-  }
-}
 void FullTensorModelTrainer::Store_Snapshot(int cross_val_run, int epoch , string fp_snapshot) {
 
   Settings *Settings_         = this->Settings_;

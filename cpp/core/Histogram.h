@@ -107,6 +107,7 @@ public:
 
   // Diagnostics
   void CheckIsProbability(float probability);
+  float ShowEntropy();
   void showProperties() {
     PrintFancy() << "Properties of histogram [" << histogram_.name << "]" << endl;
     PrintFancy() << "n_bins (includes catch-all) " << n_bins_ << endl;

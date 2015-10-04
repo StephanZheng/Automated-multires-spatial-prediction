@@ -26,6 +26,38 @@
 
 #include "util/IOController.h"
 
+inline void OpenNewFile(string filename) {
+  std::ofstream LogFile(filename, ios::out);
+  LogFile << "";
+  LogFile.close();
+}
+
+inline void WriteToFile(string filename, float value) {
+  WriteToFile<float>(filename, value);
+}
+inline void WriteToFile(string filename, double value) {
+  WriteToFile<double>(filename, value);
+}
+inline void WriteToFile(string filename, int value) {
+  WriteToFile<int>(filename, value);
+}
+inline void WriteToFile(string filename, string value) {
+  WriteToFile<string>(filename, value);
+}
+
+template <typename T>
+inline void WriteToFile(string filename, T value) {
+  std::ofstream LogFile(filename, ios::app);
+  if (LogFile.is_open())
+  {
+    LogFile << value;
+    LogFile.close();
+  }
+  else {
+    PrintFancy() << "Unable to open file " << filename << endl;
+  }
+}
+
 void writeBlobToFile(FILE * fp, VectorBlob * v) {
   for (int i = 0; i < v->data.size(); ++i) fwrite(&v->data[i], sizeof(float), 1, fp);
 }

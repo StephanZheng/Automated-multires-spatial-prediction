@@ -35,6 +35,14 @@
 
 using namespace std;
 
+void OpenNewFile(string filename);
+void WriteToFile(string filename, float value);
+void WriteToFile(string filename, double value);
+void WriteToFile(string filename, int value);
+void WriteToFile(string filename, string value);
+template <typename T>
+void WriteToFile(string filename, T value);
+
 class IOController {
   public:
   string name;
