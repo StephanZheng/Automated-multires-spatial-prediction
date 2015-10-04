@@ -24,11 +24,11 @@
 
 #include "core/DataBlob.h"
 
-inline int MatrixBlob::SerialIndex(int row, int column) {
+int MatrixBlob::SerialIndex(int row, int column) const {
   if (rows <= 0 || columns <= 0) cout << "row: " << row << "/" << rows << " col: " << column << "/" << columns << " index: " << row * columns + column << endl;
   return row * columns + column;
 }
-float MatrixBlob::at(int row, int column) {
+float MatrixBlob::at(int row, int column) const {
   CheckCoordinatesAreLegal(row, column);
   return data[SerialIndex(row, column)];
 }
@@ -36,7 +36,7 @@ float* MatrixBlob::att(int row, int column) {
   CheckCoordinatesAreLegal(row, column);
   return &data[SerialIndex(row, column)];
 }
-bool MatrixBlob::CheckCoordinatesAreLegal(int row, int column) {
+bool MatrixBlob::CheckCoordinatesAreLegal(int row, int column) const {
   if (row >= rows) {
     showParameters(row, column);
     assert( row < rows );
@@ -56,7 +56,7 @@ void MatrixBlob::init(int _rows, int _columns) {
   rows   = _rows;
   columns  = _columns;
 }
-void MatrixBlob::showParameters(int row, int column) {
+void MatrixBlob::showParameters(int row, int column) const {
   cout << "Dimensions of MatrixBlob:" << endl;
   cout << row << " " << rows << endl;
   cout << column << " " << columns << endl;

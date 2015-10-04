@@ -16,29 +16,55 @@
 #include "core/DataBlob.h"
 #include "core/Histogram.h"
 #include "util/PrettyOutput.h"
+#include "test/Test.h"
 
 class SpatialEntropy {
 
-// index x bin: float
-std::vector<Histogram> histograms_float_;
-std::vector<Histogram> histograms_sign_;
-
+// TODO(stz): Redundant class! Entropy is stored inside Histogram, for now. Perhaps refactor later.
 // index: float
 VectorBlob cell_entropy_;
 
 public:
-  SpatialEntropy() {};
-  SpatialEntropy(int n_spatial_cells, int n_bins, float min_value, float bin_width);
-  void init(int n_spatial_cells, int n_bins, float min_value, float bin_width);
 
-  void AddGradientToSpatialEntropy(int index, float gradient);
-  void AddGradientSignToSpatialEntropy(int cell_index, float gradient);
-  float GetAverageSpatialEntropy();
+  // TODO(stz): not good practice, use accessor etc methods. Being lazy here.
+  string name;
+  bool debug_mode;
+
+  // index x bin: float
+  std::vector<Histogram> histograms_float_;
+  std::vector<Histogram> histograms_sign_;
+
+
+  SpatialEntropy() {};
+  SpatialEntropy(int n_spatial_cells, int n_bins, float min_value, float max_value);
+  void init(int n_spatial_cells, int n_bins, float min_value, float max_value);
+  void init(int n_spatial_cells, int n_bins, float min_value, float max_value, float bin_width);
+
+  void EnableDebugMode() {debug_mode = true;};
+  void DisableDebugMode() {debug_mode = false;};
+
+  void AddGradientToHistogram(int index, float gradient);
+  void AddGradientSignToHistogram(int cell_index, float gradient);
+
+  // Methods loop over all spatial cells: for every cell, computes the empirical distribution and entropy.
+  void ComputeEmpiricalDistribution(std::vector<Histogram> histograms);
+  void ComputeSpatialEntropy(std::vector<Histogram> histograms);
+
+  float GetAverageSpatialEntropy(const std::vector<Histogram>& histograms);
+
   void ShowHistograms() {
-    for (auto hist : histograms_float_) {
-      hist.showProperties();
+    PrintFancy() << "Showing histograms for [" << name << "]";
+    for (int i = 0; i < histograms_float_.size(); i++) {
+      histograms_float_[i].showProperties();
     }
   };
+  void ShowSummary() {
+    for (int i = 0; i < histograms_float_.size(); i++) {
+      PrintFancy() << "Stats for " << histograms_float_[i].histogram_.name;
+      cout << " mean: " << histograms_float_[i].histogram_.getMean();
+      cout << " var: " << std::sqrt(histograms_float_[i].histogram_.getVariance()) << endl;
+    }
+  }
 
 protected:
 

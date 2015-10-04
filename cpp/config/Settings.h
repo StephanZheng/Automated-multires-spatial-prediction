@@ -139,7 +139,17 @@ public:
   // ---------------------------------------------------------------------------
   int SpatialEntropy_NumberOfBins;
   float SpatialEntropy_MinValue;
+  float SpatialEntropy_MaxValue;
   float SpatialEntropy_BinWidth;
+
+  // ---------------------------------------------------------------------------
+  // Log files for timings
+  // ---------------------------------------------------------------------------
+  string LogFolder;
+  string LogFile_Loss;
+  string LogFile_CellEntropy;
+
+
 
   // ---------------------------------------------------------------------------
   // Stage 1

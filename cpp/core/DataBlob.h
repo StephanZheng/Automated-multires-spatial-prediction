@@ -22,12 +22,21 @@
 #include <boost/numeric/ublas/matrix_sparse.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/io.hpp>
+// For statistics
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics.hpp>
 
 #include "config/GlobalConstants.h"
 #include "util/PrettyOutput.h"
 #include "test/Test.h"
 
 using namespace std;
+using namespace boost::accumulators;
+using boost::accumulators::accumulator_set;
+using boost::accumulators::stats;
+// using boost::accumulators::tag;
+// using boost::accumulators::extract::mean;
+// using boost::accumulators::extract::variance;
 
 class DataBlob {
 public:
@@ -42,26 +51,31 @@ public:
   string name;
 
   VectorBlob() {}
-
   explicit VectorBlob(int size) : data(size) {
     columns = size;
   }
-
-  inline float at(int column) {
-    assert( column < data.size() );
-    return data[column];
+  float at(int column) const {
+    if (!TEST_LT(column, (int)data.size())) {
+      assert( column < data.size() );
+    }
+    else {
+      return data[column];
+    }
+  }
+  int size() const {
+    return data.size();
   }
   float* att(int column) {
     // cout << "Accessing VectorBlob " << name << endl;
     // showParameters(column);
-    assert( columns == data.size() );
-    if (column >= columns) {
+    TEST_EQ(columns, (int)data.size());
+    if (!TEST_LT(column, (int)data.size())) {
       showParameters(column);
-      assert( columns < columns);
+      assert(columns < columns);
     }
     return &data[column];
   }
-  inline float last() {
+  float last() const {
     if (data.size() > 0) {
       return data[data.size() - 1];
     } else {
@@ -123,6 +137,18 @@ public:
       data[i] = u(e2);
     }
   }
+  // Statistics.
+  float getMean() {
+    accumulator_set<float, stats<tag::variance> > acc;
+    for_each(data.begin(), data.end(), bind<void>(ref(acc), _1));
+    return mean(acc);
+  }
+  float getVariance() {
+    accumulator_set<float, stats<tag::variance> > acc;
+    for_each(data.begin(), data.end(), bind<void>(ref(acc), _1));
+    return variance(acc);
+  }
+
 };
 /**
  * Note: Matrices are serialized row-major
@@ -157,12 +183,12 @@ public:
     sp_sd2_lvls.init(0);
     sp_sd2_nonzeros.init(0);
   }
-  inline int SerialIndex(int row, int column);
-  float at(int row, int column);
+  int SerialIndex(int row, int column) const;
+  float at(int row, int column) const;
   float *att(int row, int column);
-  bool CheckCoordinatesAreLegal(int row, int column);
+  bool CheckCoordinatesAreLegal(int row, int column) const;
   void init(int _rows, int _columns);
-  void showParameters(int row, int column);
+  void showParameters(int row, int column) const;
   void showContents(int limit, int modulo);
   void showMatrixContents(int row_lo, int row_hi, int col_lo, int col_hi, int row_modulo);
   float getMaximum(int begin, int range);
@@ -188,11 +214,11 @@ public:
     columns = _columns;
     data.resize(slices * rows * columns);
   }
-  inline int SerialIndex(int slice, int row, int col) {
+  int SerialIndex(int slice, int row, int col) const {
     if (slices <= 0 || rows <= 0 || columns <= 0) cout << "slice: " << slice << "/" << slices << " col: " << row << "/" << rows << " index: " << slice * rows * columns + row * columns + col << endl;
     return slice * rows * columns + row * columns + col;
   }
-  inline float at(int slice, int row, int col) {
+  float at(int slice, int row, int col) const {
     CheckCoordinatesAreLegal(row, col, slice);
     int index = SerialIndex(slice, row, col);
     assert(index < slices * rows * columns);
@@ -204,7 +230,7 @@ public:
     return &data[SerialIndex(slice, row, col)];
   }
 
-  bool CheckCoordinatesAreLegal(int row, int column, int slice) {
+  bool CheckCoordinatesAreLegal(int row, int column, int slice) const {
     if (row >= rows) {
       showParameters(row, column, slice);
       assert( row < rows );
@@ -238,7 +264,7 @@ public:
     }
   }
 
-  void showParameters(int row, int column, int slice) {
+  void showParameters(int row, int column, int slice) const {
     cout << "Dimensions of TensorBlob:" << endl;
     cout << row << " " << rows << endl;
     cout << column << " " << columns << endl;

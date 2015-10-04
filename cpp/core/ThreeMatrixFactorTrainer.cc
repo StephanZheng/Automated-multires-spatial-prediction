@@ -28,6 +28,7 @@
 
 using namespace std;
 using namespace rapidjson;
+using std::min;
 using std::chrono::high_resolution_clock;
 
 void ThreeMatrixFactorTrainer::Load_SnapshotWeights(string weights_snapshot_file, string momentum_snapshot_file) {
@@ -516,15 +517,15 @@ int ThreeMatrixFactorTrainer::TrainStageThree(string fp_snapshot) {
 
   PrintDelimiter(1, 1, 80, '=');
   PrintFancy(Settings_->session_start_time, "Debug -- LF_A initialization peek");
-  LF_A->showMatrixContents(0, Settings_->Dimension_A, 0, min(LF_A->columns, 10), 100);
+  LF_A->showMatrixContents(0, Settings_->Dimension_A, 0, std::min(LF_A->columns, 10), 100);
   PrintDelimiter(1, 1, 80, '=');
   PrintFancy(Settings_->session_start_time, "Debug -- LF_B subdim 1 initialization peek");
-  LF_B->showMatrixContents(0, Settings_->StageThree_Dimension_B, 0, min(LF_A->columns, 10), 200);
+  LF_B->showMatrixContents(0, Settings_->StageThree_Dimension_B, 0, std::min(LF_A->columns, 10), 200);
   PrintFancy(Settings_->session_start_time, "Debug -- LF_B subdim 2 initialization peek");
-  LF_B->showMatrixContents(0, Settings_->StageThree_Dimension_B, Settings_->StageThree_SubDimension_1, Settings_->StageThree_SubDimension_1 + min(Settings_->StageThree_SubDimension_2, 10), 200);
+  LF_B->showMatrixContents(0, Settings_->StageThree_Dimension_B, Settings_->StageThree_SubDimension_1, Settings_->StageThree_SubDimension_1 + std::min(Settings_->StageThree_SubDimension_2, 10), 200);
   PrintDelimiter(1, 1, 80, '=');
   PrintFancy(Settings_->session_start_time, "Debug -- LF_C initialization peek");
-  LF_C->showMatrixContents(0, Settings_->StageThree_Dimension_C, 0, min(LF_A->columns, 10), 50);
+  LF_C->showMatrixContents(0, Settings_->StageThree_Dimension_C, 0, std::min(LF_A->columns, 10), 50);
   PrintDelimiter(1, 1, 80, '=');
 
   // Start worker threads

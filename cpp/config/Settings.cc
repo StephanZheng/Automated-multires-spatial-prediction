@@ -47,6 +47,12 @@ void Settings::loadSettingsJSON(const char * fn_settings_file) {
     if (ss.compare("GroundTruthScoreStrong")                         == 0) GroundTruthScoreStrong = itr->value.GetDouble();
     if (ss.compare("GroundTruthScoreWeak")                           == 0) GroundTruthScoreWeak = itr->value.GetDouble();
     if (ss.compare("GroundTruthSubFolder")                           == 0) GroundTruthSubFolder = itr->value.GetString();
+
+    if (ss.compare("LogFolder")                           == 0) LogFolder = itr->value.GetString();
+    if (ss.compare("LogFile_Loss")                           == 0) LogFile_Loss = itr->value.GetString();
+    if (ss.compare("LogFile_CellEntropy")                           == 0) LogFile_CellEntropy = itr->value.GetString();
+
+
     if (ss.compare("LossWeightStrong")                               == 0) LossWeightStrong = itr->value.GetDouble();
     if (ss.compare("LossWeightWeak")                                 == 0) LossWeightWeak = itr->value.GetDouble();
     if (ss.compare("NumberOfColumnsScoreFunction")                   == 0) NumberOfColumnsScoreFunction = itr->value.GetInt();
@@ -70,6 +76,8 @@ void Settings::loadSettingsJSON(const char * fn_settings_file) {
     if (ss.compare("SparsityRunningAverageWindowSize")               == 0) SparsityRunningAverageWindowSize = itr->value.GetInt();
     if (ss.compare("SpatialEntropy_BinWidth")                        == 0) SpatialEntropy_BinWidth = itr->value.GetDouble();
     if (ss.compare("SpatialEntropy_MinValue")                        == 0) SpatialEntropy_MinValue = itr->value.GetDouble();
+    if (ss.compare("SpatialEntropy_MaxValue")                        == 0) SpatialEntropy_MaxValue = itr->value.GetDouble();
+
     if (ss.compare("SpatialEntropy_NumberOfBins")                    == 0) SpatialEntropy_NumberOfBins = itr->value.GetInt();
     if (ss.compare("SpatialRegularization")                          == 0) SpatialRegularization = itr->value.GetInt();
     if (ss.compare("StageOne_ApplyMomentumEveryNthMinibatch")        == 0) StageOne_ApplyMomentumEveryNthMinibatch = itr->value.GetInt();

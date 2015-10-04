@@ -51,8 +51,6 @@ using namespace std;
 
 class FullTensorModelTrainer : public Trainer {
 
-  friend class SpatialEntropy;
-
 public:
   SpatialEntropy spatial_entropy;
 
@@ -82,12 +80,11 @@ public:
                          GroundTruthLabel *aGroundTruthLabelsTrainValWeak_,
                          GroundTruthLabel *aGroundTruthLabelsTestWeak_,
                          Settings *aSettings_,
-                         CurrentStateBlob *aCurrentStateBlob_) {
-
-    spatial_entropy.init(aSettings_->StageOne_Dimension_B,
+                         CurrentStateBlob *aCurrentStateBlob_) : \
+  spatial_entropy(aSettings_->StageOne_Dimension_B,
                          aSettings_->SpatialEntropy_NumberOfBins,
                          aSettings_->SpatialEntropy_MinValue,
-                         aSettings_->SpatialEntropy_BinWidth);
+                         aSettings_->SpatialEntropy_MaxValue) {
 
     // Tell ThreeMatrixFactorTrainer where the loaded data sits
     IOController_                    = aIOController_;

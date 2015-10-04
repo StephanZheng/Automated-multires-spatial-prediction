@@ -47,9 +47,10 @@ using std::chrono::high_resolution_clock;
 
 class Trainer {
 
-friend class SpatialEntropy;
-
 public:
+  bool debug_mode;
+  void EnableDebugMode() {debug_mode = true;};
+  void DisableDebugMode() {debug_mode = false;};
 
   int         CheckIfFloatIsNan(float x, string y);
 

@@ -142,13 +142,18 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
   VectorBlob      *Bias_A_Diff                 = &this->Bias_A_Diff;
   std::vector<float>  *NestorovMomentumLambda_ = &this->NestorovMomentumLambda;
 
-  // spatial_entropy = \
-  // new SpatialEntropy(Settings_->StageOne_Dimension_B,
-  //                   Settings_->SpatialEntropy_NumberOfBins,
-  //                   Settings_->SpatialEntropy_MinValue,
-  //                   Settings_->SpatialEntropy_BinWidth);
+  if (Settings_->EnableDebugPrinter_Level1 == 1) {
+    EnableDebugMode();
+  } else {
+    DisableDebugMode();
+  }
 
-  spatial_entropy.ShowHistograms();
+  IOController_->OpenNewFile(Settings_->LogFolder + Settings_->LogFile_Loss);
+  IOController_->WriteToFile(Settings_->LogFolder + Settings_->LogFile_Loss, "TEST");
+  // IOController_->AppendToFile(Settings_->LogFolder + Settings_->LogFile_Loss) << "TEST";
+
+  // spatial_entropy.ShowHistograms();
+  spatial_entropy.DisableDebugMode();
 
   // Set the correct number of threads to use in generateTrainingBatches -- this is a slight hack
   Settings_->CurrentNumberOfThreads = Settings_->StageOne_NumberOfThreads;
@@ -318,8 +323,15 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
         // ------------------------------------------------------------------------------------------------------------------------------
         // Compute spatial entropy of gradients
         // ------------------------------------------------------------------------------------------------------------------------------
+        // Add gradients of minibatch to histogram -- this is paralellized
         n_threads_commanded_this_batch = this->generateTrainingBatches(9, batch, n_batches, n_datapoints_processed_so_far_this_epoch, Settings_->StageOne_MiniBatchSize);
         task_queue_.waitForTasksToComplete(n_threads_commanded_this_batch);
+
+        // Compute entropy of accumulated gradients so far.
+        // TODO(stz): implement streaming version of this: how to deal with renormalization per update?
+        spatial_entropy.ComputeEmpiricalDistribution(spatial_entropy.histograms_float_);
+        spatial_entropy.ComputeSpatialEntropy(spatial_entropy.histograms_float_);
+        PrintFancy() << "Average spatial entropy: " << spatial_entropy.GetAverageSpatialEntropy(spatial_entropy.histograms_float_);
 
         // ------------------------------------------------------------------------------------------------------------------------------
         // Apply momentum
@@ -359,7 +371,6 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
         // Note this miscounts at the last batch (n_batches - 1), because that batch might contain a smaller number of datapoints than MiniBatchSize
         // but this is irrelevant there anyway [EXCEPT FOR MISUNDERSTANDINGS DURING DEBUGGING]
         n_datapoints_processed_so_far_this_epoch += n_threads_commanded_this_batch * Settings_->StageOne_MiniBatchSize;
-
         n_batches_served++;
       }
 
@@ -443,6 +454,11 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
         this->Store_Snapshot(cross_val_run, epoch, fp_snapshot);
       }
 
+      // Show Entropy summary.
+      spatial_entropy.ShowSummary();
+      // ------------------------------------------------------------------------------------------------
+      // End of epoch
+      // ------------------------------------------------------------------------------------------------
       // Loss did not below threshold, but we hit the max #epochs
       if (epoch == Settings_->StageOne_NumberOfEpochs - 1) PrintFancy(Settings_->session_start_time, "Maximal number of epochs reached, but not all loss thresholds reached... continuing to next xval-run.");
 
@@ -668,7 +684,7 @@ void FullTensorModelTrainer::ThreadComputer(int thread_id) {
       }
 
       if (task.task_type == 9) {
-        ComputeSpatialEntropy(thread_id, task.index_A, task.frame_id, task.ground_truth_label);
+        this->ComputeSpatialEntropy(thread_id, task.index_A, task.frame_id, task.ground_truth_label);
       }
 
     }
@@ -1021,11 +1037,13 @@ void FullTensorModelTrainer::ProcessWeight_U_Updates(int thread_id, int index_A)
       if (Settings_->EnableDebugPrinter_Level1 == 1){
         if (thread_id == 0 and index_A == 0 and index_B % 10000 == 0 and index_C == 0) {
 
-          PrintDelimiter(0, 0, 80, '=');
-          cout << setprecision(PRINT_FLOAT_PRECISION_SCORE) << std::setfill(' ') << "abc " << std::setw(9) << index_A << " " << index_B << " " << index_C;
-          cout << " weight_old  " << std::setw(PRINT_FLOAT_PRECISION_SCORE+4) << weight_old;
-          cout << " weight_update " << std::setw(PRINT_FLOAT_PRECISION_SCORE+4) << weight_update;
-          cout << endl;
+          if (debug_mode) {
+            PrintDelimiter(0, 0, 80, '=');
+            cout << setprecision(PRINT_FLOAT_PRECISION_SCORE) << std::setfill(' ') << "abc " << std::setw(9) << index_A << " " << index_B << " " << index_C;
+            cout << " weight_old  " << std::setw(PRINT_FLOAT_PRECISION_SCORE+4) << weight_old;
+            cout << " weight_update " << std::setw(PRINT_FLOAT_PRECISION_SCORE+4) << weight_update;
+            cout << endl;
+          }
 
         }
       }
@@ -1134,7 +1152,7 @@ void FullTensorModelTrainer::ComputeSpatialEntropy(int thread_id, int index_A, i
   for (int i = 0; i < indices_B.size() - 1; i++) {
 
     int index_B = indices_B[i];
-    spatial_entropy.AddGradientToSpatialEntropy(index_B, U_gradient);
+    spatial_entropy.AddGradientToHistogram(index_B, U_gradient);
 
     if (Settings_->EnableDebugPrinter_Level1 and frame_id % 5000000 == 0 and index_B % 100 == 0 and U_gradient > 0) {
       cout << setw(15) << setprecision(10) << "Debug spatial entropy of gradients -- T: " << thread_id << " Frame " << frame_id << " index_B " << index_B << endl;

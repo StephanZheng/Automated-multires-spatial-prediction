@@ -51,6 +51,44 @@ class IOController {
   void LoadGroundTruthLabelsWeak(string fp_ground_truth_labels, GroundTruthLabel *blob, int sanity_check);
 
   void ExportFinalResults();
+
+  void OpenNewFile(string filename) {
+    std::ofstream LogFile(filename, ios::out);
+    LogFile << "";
+    LogFile.close();
+  }
+
+  void WriteToFile(string filename, float value) {
+    WriteToFile<float>(filename, value);
+  }
+  void WriteToFile(string filename, double value) {
+    WriteToFile<double>(filename, value);
+  }
+  void WriteToFile(string filename, int value) {
+    WriteToFile<int>(filename, value);
+  }
+  void WriteToFile(string filename, string value) {
+    WriteToFile<string>(filename, value);
+  }
+
+  template <typename T>
+  void WriteToFile(string filename, T value) {
+    std::ofstream LogFile(filename, ios::app);
+    if (LogFile.is_open())
+    {
+      LogFile << value;
+      LogFile.close();
+    }
+    else {
+      PrintFancy() << "Unable to open file " << filename << endl;
+    }
+  }
+
+  // std::ofstream AppendToFile(string filename) {
+  //   std::ofstream File(filename, ios::app);
+  //   return File;
+  // }
+
 };
 
 #endif

@@ -1,7 +1,8 @@
 {
   "SpatialEntropy_NumberOfBins"                 : 100,
-  "SpatialEntropy_MinValue"                     : -1.0,
-  "SpatialEntropy_BinWidth"                     : 0.02,
+  "SpatialEntropy_MinValue"                     : -0.002,
+  "SpatialEntropy_MaxValue"                     : 0.002,
+  "SpatialEntropy_BinWidth"                     : 0.0,
 
   "-->CustomTrainingOptions"                    : "",
   "NumberOfGridCells"                           : 2000,
@@ -11,8 +12,8 @@
   "-->Hyperparameters"                          : "",
   "-->ResumeOptions                             :: shouldn't be simultaneously 1 (is accounted for in code":  "",
   "CapScores"                                   : 0,
-  "EnableDebugPrinter_Level1"                   : 1,
-  "EnableDebugPrinter_Level2"                   : 1,
+  "EnableDebugPrinter_Level1"                   : 0,
+  "EnableDebugPrinter_Level2"                   : 0,
   "EnableDebugPrinter_Level3"                   : 0,
   "FeatureThreshold"                            : 0.0,
   "GradientRandomizeAtZero"                     : 0,

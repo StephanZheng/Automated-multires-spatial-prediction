@@ -46,8 +46,6 @@ class PerformanceController {
     PrintFancy(Settings_->session_start_time, "Runtime: " + to_string(time_span.count()) + " seconds");
   }
 
-
-
 };
 
 #endif

@@ -717,7 +717,7 @@ float Trainer::getSparsityLevel(MatrixBlob * blob, int col_lo, int col_hi, float
 
 float Trainer::getRunningAverage(VectorBlob * blob) {
   float running_average = 1.e10;
-  for (int i = 0; i < min(blob->columns, Settings_->SparsityRunningAverageWindowSize); ++i)
+  for (int i = 0; i < std::min(blob->columns, Settings_->SparsityRunningAverageWindowSize); ++i)
   {
     running_average = (i*running_average + blob->at(blob->columns - 1 - i)) / static_cast<float>(i + 1);
   }
@@ -1221,6 +1221,7 @@ int Trainer::GetExpectedSizeSnapshotFile(Settings * s){
   }
   // return Settings_->Dimension_A * Settings_->StageOne_Dimension_B * Settings_->StageOne_Dimension_C + Settings_->Dimension_A;
 }
+
 
 float Trainer::cap(int thread_id, int index_A, int frame_id, float score, float cap_hi, float cap_lo) {
   Settings  *Settings_    = this->Settings_;
