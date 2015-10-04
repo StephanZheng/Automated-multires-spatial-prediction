@@ -95,6 +95,16 @@ void PrintFancy(const T& message) {
   cout << "[" << str << "] " << std::setprecision(20) << message << endl;
 }
 
+extern std::ostream& PrintFancy() {
+  high_resolution_clock::time_point _now = high_resolution_clock::now();
+  time_t now = chrono::system_clock::to_time_t(_now);
+  char str[80];
+  strftime(str, sizeof(str), "%d %b %Y %H:%M:%S", localtime(&now));
+
+  cout << "[" << str << "] ";
+  return cout;
+}
+
 void PrintWithDelimiters(high_resolution_clock::time_point session_start_time, const string& message) {
   PrintDelimiter(1, 1, 80, '=');
   PrintFancy(session_start_time, message);

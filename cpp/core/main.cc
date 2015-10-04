@@ -49,6 +49,23 @@ using std::chrono::high_resolution_clock;
 using std::chrono::time_point;
 using std::chrono::system_clock;
 
+void LoadJSONfiles(Settings* s, char *argv[]) {
+  char * filepaths_json_file;
+  char * features_json_file;
+  char * labels_json_file;
+  char * training_param_json_file;
+
+  filepaths_json_file      = argv[1];
+  features_json_file       = argv[2];
+  labels_json_file         = argv[3];
+  training_param_json_file = argv[4];
+  s->loadSettingsJSON(filepaths_json_file);
+  s->loadSettingsJSON(features_json_file);
+  s->loadSettingsJSON(labels_json_file);
+  s->loadSettingsJSON(training_param_json_file);
+
+}
+
 /**
  * Use: ./EXEC_NAME settings.json [1 override_value1 override_value2 ... ...]
  * For override options, see below
@@ -82,37 +99,27 @@ int main(int argc, char *argv[]) {
   int _override = 0;
   PrintFancy(Settings_->session_start_time, "Seen " + to_string(argc) + " arguments" );
 
-  char * features_json_file;
-  char * labels_json_file;
-  char * training_param_json_file;
+
   assert(argc > 1);  // We need at least a settings -- *.json -- file
   // You can also override JSON settings with command-line settings
 
-  if (argc != 4 && argc != 21) {
+  if (argc != 5 && argc != 22) {
     PrintFancy<string>("You should specify either 3 JSON files *or* 3 JSON + 16 override arguments.");
     exit;
-  } else if (argc == 4) {
-    features_json_file       = argv[1];
-    labels_json_file         = argv[2];
-    training_param_json_file = argv[3];
-    Settings_->loadSettingsJSON(features_json_file);
-    Settings_->loadSettingsJSON(labels_json_file);
-    Settings_->loadSettingsJSON(training_param_json_file);
-  } else if (argc == 21) {
-    features_json_file       = argv[1];
-    labels_json_file         = argv[2];
-    training_param_json_file = argv[3];
-    Settings_->loadSettingsJSON(features_json_file);
-    Settings_->loadSettingsJSON(labels_json_file);
-    Settings_->loadSettingsJSON(training_param_json_file);
+  } else if (argc == 5) {
+    LoadJSONfiles(Settings_, argv);
+  } else if (argc == 22) {
+    LoadJSONfiles(Settings_, argv);
+
     for (int i = 0; i < argc; ++i) {
       if (i == 2) {
-        assert(argc == 21);  // If we specify more options than just the settings-file, than we need to specify exactly the right number of override settings
+        assert(argc == 22);  // If we specify more options than just the settings-file, than we need to specify exactly the right number of override settings
         if (stoi(argv[i]) == 1) {
           PrintFancy(Settings_->session_start_time, "You specified additional arguments, so these will override some settings from those in the JSON file!");
           _override = 1;
         }
       }
+      // TODO(stz): make this adaptive, not fixed indices.
       if (_override == 1) {
         cout << argv[i] << endl;
         if (i == 3) {

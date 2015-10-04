@@ -46,7 +46,11 @@ using namespace std::chrono;
 using std::chrono::high_resolution_clock;
 
 class Trainer {
+
+friend class SpatialEntropy;
+
 public:
+
   int         CheckIfFloatIsNan(float x, string y);
 
   // Pointers to settings / IOController that are needed by all stages of training
@@ -62,7 +66,7 @@ public:
   GroundTruthLabel  *GroundTruthLabelsTestStrong_;
   GroundTruthLabel  *GroundTruthLabelsTrainValWeak_;
   GroundTruthLabel  *GroundTruthLabelsTestWeak_;
-  Settings      *Settings_;
+  Settings          *Settings_;
   CurrentStateBlob  *CurrentStateBlob_;
 
   std::vector<int>  CurrentTrainIndices_Strong;

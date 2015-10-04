@@ -1,21 +1,16 @@
 {
-"DATASET_NAME"                                : "bb",
-"FeaturesSubFolder"                           : "/cs/ml/datasets/bball_tracking/features",
-"FILENAME_FEATURES_B"                         : "/feat_ballh_occupancy_coarsegrid_lvl2.bin",
+
+
+"FILENAME_FEATURES_B"                         : "/ballh_c10.bin",
+
 "FILENAME_FEATURES_B_window_3by3"             : "/feat_ballh_occupancy_spatial_regularization_sliding_window_3by3cells.bin",
 "FILENAME_FEATURES_C"                         : "/feat_defender_occupancy_coarsegrid_lvl2.bin",
 "FILENAME_FEATURES_C_window_3by3"             : "/feat_defender_occupancy_spatial_regularization_sliding_window_3by3cells.bin",
-"RootFolder"                                  : "/cs/ml/datasets/bball_tracking",
-"SeedSubFolder"                               : "/cs/ml/datasets/bball_tracking/seeds",
-"SnapshotSubFolder"                           : "/cs/ml/datasets/bball_tracking/snapshots",
 
-"StageOne_SnapshotWeightsBiases"              : "/cs/ml/datasets/bball_tracking/snapshots/rank3/stage1/ss_s1_rank3_23Feb113910_0_wgt+bias_0_0_0.277548_0.272863.bin",
-
-"NumberOfGridCells"                           : 2000,
-"StageOne_Dimension_B"                        : 500,
+"Dimension_B_BiasSlice"                       : 0,
+"Dimension_C_BiasSlice"                       : 1,
+"StageOne_Dimension_B"                        : 20,
 "StageOne_Dimension_C"                        : 37,
-"StageOne_NumberOfFeaturesBallhandler"        : 2000,
-"StageOne_NumberOfFeaturesDefenders"          : 144,
 "StageOne_NumberOfNonZeroEntries_B"           : 1,
 "StageOne_NumberOfNonZeroEntries_C"           : 5
 }

@@ -50,7 +50,11 @@
 using namespace std;
 
 class FullTensorModelTrainer : public Trainer {
-  public:
+
+  friend class SpatialEntropy;
+
+public:
+  SpatialEntropy spatial_entropy;
 
   // These are parameters to be learned
   Tensor3Blob Weight_U;
@@ -69,16 +73,21 @@ class FullTensorModelTrainer : public Trainer {
   float regularization_Sparse_S;
 
   FullTensorModelTrainer(IOController *aIOController_,
-            MatrixBlob *aBlob_B_,
-            MatrixBlob *aBlob_BTransposed_,
-            MatrixBlob *aBlob_C_,
-            MatrixBlob *aBlob_CTransposed_,
-            GroundTruthLabel *aGroundTruthLabelsTrainValStrong_,
-            GroundTruthLabel *aGroundTruthLabelsTestStrong_,
-            GroundTruthLabel *aGroundTruthLabelsTrainValWeak_,
-            GroundTruthLabel *aGroundTruthLabelsTestWeak_,
-            Settings *aSettings_,
-            CurrentStateBlob *aCurrentStateBlob_){
+                         MatrixBlob *aBlob_B_,
+                         MatrixBlob *aBlob_BTransposed_,
+                         MatrixBlob *aBlob_C_,
+                         MatrixBlob *aBlob_CTransposed_,
+                         GroundTruthLabel *aGroundTruthLabelsTrainValStrong_,
+                         GroundTruthLabel *aGroundTruthLabelsTestStrong_,
+                         GroundTruthLabel *aGroundTruthLabelsTrainValWeak_,
+                         GroundTruthLabel *aGroundTruthLabelsTestWeak_,
+                         Settings *aSettings_,
+                         CurrentStateBlob *aCurrentStateBlob_) {
+
+    spatial_entropy.init(aSettings_->StageOne_Dimension_B,
+                         aSettings_->SpatialEntropy_NumberOfBins,
+                         aSettings_->SpatialEntropy_MinValue,
+                         aSettings_->SpatialEntropy_BinWidth);
 
     // Tell ThreeMatrixFactorTrainer where the loaded data sits
     IOController_                    = aIOController_;
@@ -98,9 +107,6 @@ class FullTensorModelTrainer : public Trainer {
     int n_dimension_C                = Settings_->StageOne_Dimension_C;
     int n_frames                     = Settings_->NumberOfFrames;
     int n_threads                    = Settings_->StageOne_NumberOfThreads;
-
-    // VectorBlob *ptr_v;
-    // MatrixBlob *ptr_m;
 
     ConditionalScore.init(    n_frames,   Settings_->NumberOfColumnsScoreFunction);
 
@@ -166,11 +172,11 @@ class FullTensorModelTrainer : public Trainer {
   float   ComputeInnerproductTriple(int thread_id, int outer_row, int outer_col, MatrixBlob *A, MatrixBlob *B, MatrixBlob *C);
 
   float   ComputeTripleProductPsiPsiU(  int thread_id,
-                      int frame_id,
-                      int index_A,
-                      Tensor3Blob *Sparse_S,
-                      std::vector<int> *indices_B,
-                      std::vector<int> *indices_C);
+                                        int frame_id,
+                                        int index_A,
+                                        Tensor3Blob *Sparse_S,
+                                        std::vector<int> *indices_B,
+                                        std::vector<int> *indices_C);
 
   void  DebuggingTestProbe(int thread_id, int index_A, int frame_id, int ground_truth_label, int index);
 
@@ -187,6 +193,8 @@ class FullTensorModelTrainer : public Trainer {
 
   void  ComputeBias_A_Update(int thread_id, int index_A, int frame_id, int ground_truth_label);
   void  ProcessBias_A_Updates(int thread_id, int index_A);
+
+  void  ComputeSpatialEntropy(int thread_id, int index_A, int frame_id, int ground_truth_label);
 
   void  Load_SnapshotWeights(string weights_snapshot_file, string momentum_snapshot_file);
 

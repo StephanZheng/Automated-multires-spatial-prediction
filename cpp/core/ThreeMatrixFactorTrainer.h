@@ -44,6 +44,9 @@ using namespace std;
 
 
 class ThreeMatrixFactorTrainer : public Trainer {
+
+  friend class SpatialEntropy;
+
   public:
   // These are parameters to be learned
   // Legacy

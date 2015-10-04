@@ -129,39 +129,39 @@ void FullTensorModelTrainer::RestoreStartingWeights() {
   VectorBlob  *Bias_A            = &this->Bias_A;
   VectorBlob  *Bias_A_Snapshot   = &this->Bias_A_Snapshot;
 
-  for (int i = 0; i < Weight_U->data.size(); ++i)        Weight_U->data[i] = Weight_U_Snapshot->data[i];
+  for (int i = 0; i < Weight_U->data.size(); ++i)  Weight_U->data[i] = Weight_U_Snapshot->data[i];
   for (int i = 0; i < Bias_A->data.size(); ++i)    Bias_A->data[i] = Bias_A_Snapshot->data[i];
 }
 int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
-  Settings      *Settings_            = this->Settings_;
-  CurrentStateBlob  *CurrentStateBlob = this->CurrentStateBlob_;
-
-  std::vector<int>  *RandomizedIterator = &this->RandomizedIterator;
-
-  Tensor3Blob     *Weight_U           = &this->Weight_U;
-  Tensor3Blob     *Weight_U_Diff      = &this->Weight_U_Diff;
-  VectorBlob      *Bias_A             = &this->Bias_A;
-  VectorBlob      *Bias_A_Diff        = &this->Bias_A_Diff;
-
+  // Settings      *Settings_                     = this->Settings_;
+  CurrentStateBlob  *CurrentStateBlob          = this->CurrentStateBlob_;
+  std::vector<int>  *RandomizedIterator        = &this->RandomizedIterator;
+  Tensor3Blob     *Weight_U                    = &this->Weight_U;
+  Tensor3Blob     *Weight_U_Diff               = &this->Weight_U_Diff;
+  VectorBlob      *Bias_A                      = &this->Bias_A;
+  VectorBlob      *Bias_A_Diff                 = &this->Bias_A_Diff;
   std::vector<float>  *NestorovMomentumLambda_ = &this->NestorovMomentumLambda;
 
-  CurrentStateBlob->current_stage   = 1;
+  // spatial_entropy = \
+  // new SpatialEntropy(Settings_->StageOne_Dimension_B,
+  //                   Settings_->SpatialEntropy_NumberOfBins,
+  //                   Settings_->SpatialEntropy_MinValue,
+  //                   Settings_->SpatialEntropy_BinWidth);
+
+  spatial_entropy.ShowHistograms();
 
   // Set the correct number of threads to use in generateTrainingBatches -- this is a slight hack
   Settings_->CurrentNumberOfThreads = Settings_->StageOne_NumberOfThreads;
+  CurrentStateBlob->current_stage = 1;
 
   int *have_recorded_a_trainloss = new int;
-  *have_recorded_a_trainloss   = 0;
+  *have_recorded_a_trainloss = 0;
 
-
-  PrintDelimiter(5, 5, 80, '=');
   if (Settings_->EnableDebugPrinter_Level1 == 1){
-    PrintFancy(Settings_->session_start_time, "Debug print ENABLED --> showing peeks into internal numbers");
+    PrintWithDelimiters(Settings_->session_start_time, "Debug print ENABLED --> showing peeks into internal numbers");
   } else {
-    PrintFancy(Settings_->session_start_time, "Debug print DISABLED");
+    PrintWithDelimiters(Settings_->session_start_time, "Debug print DISABLED");
   }
-  PrintDelimiter(5, 5, 80, '=');
-
 
   // Initialize the parameters to be learned
   if (Settings_->ResumeTraining == 1) {
@@ -173,13 +173,11 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
       );
   }
 
-  PrintDelimiter(1, 1, 80, '=');
   PrintFancy(Settings_->session_start_time, "Debug -- Bias_A initialization peek");
   Bias_A->showVectorContents(100, 10);
 
   PrintFancy(Settings_->session_start_time, "Debug -- Weight_U initialization peek");
   Weight_U->showTensorContents(10, 1, 10, 1, Settings_->StageOne_Dimension_C - 1);
-
 
   // Start worker threads
   std::vector<boost::thread *> threads(Settings_->StageOne_NumberOfThreads);
@@ -317,12 +315,22 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
           task_queue_.waitForTasksToComplete(n_threads_commanded_this_batch);
         }
 
+        // ------------------------------------------------------------------------------------------------------------------------------
+        // Compute spatial entropy of gradients
+        // ------------------------------------------------------------------------------------------------------------------------------
+        n_threads_commanded_this_batch = this->generateTrainingBatches(9, batch, n_batches, n_datapoints_processed_so_far_this_epoch, Settings_->StageOne_MiniBatchSize);
+        task_queue_.waitForTasksToComplete(n_threads_commanded_this_batch);
+
+        // ------------------------------------------------------------------------------------------------------------------------------
         // Apply momentum
+        // ------------------------------------------------------------------------------------------------------------------------------
         if (batch % Settings_->StageOne_ApplyMomentumEveryNthMinibatch == 0) {
           this->ApplyNestorovMomentum(batch);
         }
 
+        // ------------------------------------------------------------------------------------------------------------------------------
         // Threshold weights
+        // ------------------------------------------------------------------------------------------------------------------------------
         if (Settings_->StageOne_Weight_U_ClampToThreshold == 1 and batch % 5 == 0) {
           Weight_U->ThresholdValues(-1e99, Settings_->StageOne_Weight_U_Threshold, Settings_->StageOne_Weight_U_Threshold);
         }
@@ -418,8 +426,6 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
         cout << " -- prev: " << setprecision(PRINT_FLOAT_PRECISION_LOSS) << Settings_->StageOne_LossValidPreviousEpoch;
         cout << " -- delta: " << setprecision(PRINT_FLOAT_PRECISION_LOSS) << loss_valid - Settings_->StageOne_LossValidPreviousEpoch;
         cout << endl;
-
-        PrintDelimiter(1, 1, 80, '=');
 
         PrintTimeElapsedSince(start_time_loss_compute, "Loss compute-time");
 
@@ -659,6 +665,10 @@ void FullTensorModelTrainer::ThreadComputer(int thread_id) {
       if (task.task_type == 6 || task.task_type == 7 || task.task_type == 8) {
         // PrintFancy(Settings_->session_start_time, "ComputeLossPartial");
         // this->ComputeLossPartial(thread_id, task.labels_id_start, task.labels_id_end, task.index_A_start, task.index_A_end, task.task_type)
+      }
+
+      if (task.task_type == 9) {
+        ComputeSpatialEntropy(thread_id, task.index_A, task.frame_id, task.ground_truth_label);
       }
 
     }
@@ -927,6 +937,8 @@ void FullTensorModelTrainer::ComputeWeight_U_Update(int thread_id, int index_A, 
       // Gradient descent update
       U_gradient += strongweakweight * factor * index_B_val * index_C_val / n_MiniBatchSize;
 
+
+
       // Compute regularization
       if (Settings_->StageOne_Weight_U_RegularizationType == 1) {
         gradient_reg = GetLassoGradient(thread_id, old_weight);
@@ -1083,6 +1095,52 @@ void FullTensorModelTrainer::ProcessBias_A_Updates(int thread_id, int index_A) {
     }
   }
   *(Bias_A->att(index_A)) -= adaptive_learning_rate * Bias_A_Diff->at(index_A);
+}
+
+void FullTensorModelTrainer::ComputeSpatialEntropy(int thread_id, int index_A, int frame_id, int ground_truth_label) {
+
+  MatrixBlob *ConditionalScore = &(this->ConditionalScore);
+  int n_dimension_B            = Settings_->StageOne_Dimension_B;
+  int n_dimension_C            = Settings_->StageOne_Dimension_C;
+  float strongweakweight       = 0.;
+  float factor                 = 0.;
+  float U_gradient             = 0.;
+  float ExponentialScore       = ConditionalScore->at(frame_id, index_A % Settings_->ScoreFunctionColumnIndexMod);
+
+  if (ground_truth_label == 0) {
+    strongweakweight = Settings_->LossWeightWeak;
+    factor = 1.0 / ( 1.0 + exp(-ExponentialScore) );
+  } else {
+    assert(ground_truth_label == 1);
+    strongweakweight = Settings_->LossWeightStrong;
+    factor = -1.0 / ( 1.0 + exp(ExponentialScore) );
+  }
+
+  std::vector<int> indices_B = this->getIndices_B(frame_id, 1);
+  std::vector<int> indices_C = this->getIndices_C(frame_id, 1);
+  assert(indices_C.size() == 1 + Settings_->DummyMultiplier * (Settings_->StageOne_NumberOfNonZeroEntries_C));
+
+  if (Settings_->EnableDebugPrinter_Level2 == 1 and frame_id % 10000 == 0) {
+    cout << "T: " << thread_id << " Frame " << frame_id << " indices_B: ";
+    PrintContentsOfVector<int>(indices_B);
+    cout << "T: " << thread_id << " Frame " << frame_id << " indices_C: ";
+    PrintContentsOfVector<int>(indices_C);
+  }
+
+  U_gradient = strongweakweight * factor / Settings_->StageOne_MiniBatchSize;
+
+  // Process all positions in this feature vector
+  // Watch out: our position features have a stop token in the last slot, which we should *NOT* process!
+  for (int i = 0; i < indices_B.size() - 1; i++) {
+
+    int index_B = indices_B[i];
+    spatial_entropy.AddGradientToSpatialEntropy(index_B, U_gradient);
+
+    if (Settings_->EnableDebugPrinter_Level1 and frame_id % 5000000 == 0 and index_B % 100 == 0 and U_gradient > 0) {
+      cout << setw(15) << setprecision(10) << "Debug spatial entropy of gradients -- T: " << thread_id << " Frame " << frame_id << " index_B " << index_B << endl;
+      cout << setw(15) << setprecision(10) << " U_gradient "  << U_gradient << " factor " << factor << endl;
+    }
+  }
 }
 void FullTensorModelTrainer::Store_Snapshot(int cross_val_run, int epoch , string fp_snapshot) {
 

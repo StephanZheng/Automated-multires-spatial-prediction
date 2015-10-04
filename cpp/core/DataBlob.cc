@@ -36,7 +36,6 @@ float* MatrixBlob::att(int row, int column) {
   CheckCoordinatesAreLegal(row, column);
   return &data[SerialIndex(row, column)];
 }
-
 bool MatrixBlob::CheckCoordinatesAreLegal(int row, int column) {
   if (row >= rows) {
     showParameters(row, column);
@@ -52,19 +51,16 @@ bool MatrixBlob::CheckCoordinatesAreLegal(int row, int column) {
     return true;
   }
 }
-
 void MatrixBlob::init(int _rows, int _columns) {
   data.resize(_rows * _columns);
   rows   = _rows;
   columns  = _columns;
 }
-
 void MatrixBlob::showParameters(int row, int column) {
   cout << "Dimensions of MatrixBlob:" << endl;
   cout << row << " " << rows << endl;
   cout << column << " " << columns << endl;
 }
-
 void MatrixBlob::showContents(int limit, int modulo) {
   for (int i = 0; i < data.size(); ++i) {
     if (i < limit and i % modulo == 0) {
@@ -189,7 +185,6 @@ void MatrixBlob::erase() {
     data[i] = 0.;
   }
 }
-
 void MatrixBlob::initRandom(float range) {
   random_device rd;
   mt19937 e2(rd());

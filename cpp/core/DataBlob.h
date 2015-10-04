@@ -43,14 +43,22 @@ public:
 
   VectorBlob() {}
 
-  explicit VectorBlob(int size) : data(size) {}
+  explicit VectorBlob(int size) : data(size) {
+    columns = size;
+  }
 
   inline float at(int column) {
     assert( column < data.size() );
     return data[column];
   }
-  float * att(int column) {
-    assert( column < data.size() );
+  float* att(int column) {
+    // cout << "Accessing VectorBlob " << name << endl;
+    // showParameters(column);
+    assert( columns == data.size() );
+    if (column >= columns) {
+      showParameters(column);
+      assert( columns < columns);
+    }
     return &data[column];
   }
   inline float last() {
@@ -59,6 +67,10 @@ public:
     } else {
       return 0.;
     }
+  }
+  void showParameters(int column) {
+    PrintFancy() << "VectorBlob [" << name << "]: accessing with index:";
+    cout << column << " / " << columns << " | data.size() = " << data.size() << endl;
   }
   void showContents(int limit, int modulo) {
     for (int i = 0; i < data.size(); ++i) {
@@ -73,6 +85,7 @@ public:
   void init(int _columns) {
     data.resize(_columns);
     columns = _columns;
+    PrintFancy() << "Initialized VectorBlob [" << name << "] with " << columns << " " << data.size() << " columns" << endl;
   }
   void erase() {
     for (int i; i < data.size(); i++) {

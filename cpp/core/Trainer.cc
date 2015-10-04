@@ -254,6 +254,10 @@ void Trainer::PermuteTrainValIndices() {
   for (int i                                          = 0; i < CurrentValidIndices_Strong->size(); ++i)  CurrentValidIndices_Strong->at(i)   = CurrentTrainIndices_Strong->at(i);
   for (int i                                          = 0; i < CurrentValidIndices_Weak->size(); ++i)    CurrentValidIndices_Weak->at(i)   = CurrentTrainIndices_Weak->at(i);
 
+  cout << "Debug Permute" << endl;
+  cout << "CurrentTrainIndices_Strong.size(): " << CurrentTrainIndices_Strong->size() << endl;
+  cout << "Settings_->NumberOfStrongLabels_Val: " << Settings_->NumberOfStrongLabels_Val << endl;
+
   // Remove the first N entries from the old vector and push the old validation on
   CurrentTrainIndices_Strong->erase(CurrentTrainIndices_Strong->begin(),   CurrentTrainIndices_Strong->begin() + Settings_->NumberOfStrongLabels_Val);
   CurrentTrainIndices_Strong->insert(CurrentTrainIndices_Strong->end(), temp_val_strong.begin(), temp_val_strong.end());
