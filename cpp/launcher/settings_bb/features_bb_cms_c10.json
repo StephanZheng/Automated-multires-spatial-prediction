@@ -7,6 +7,8 @@
 "FILENAME_FEATURES_C"                         : "/feat_defender_occupancy_coarsegrid_lvl2.bin",
 "FILENAME_FEATURES_C_window_3by3"             : "/feat_defender_occupancy_spatial_regularization_sliding_window_3by3cells.bin",
 
+"Dimension_B"                        : 20,
+"Dimension_C"                        : 37,
 "Dimension_B_BiasSlice"                       : 0,
 "Dimension_C_BiasSlice"                       : 1,
 "StageOne_Dimension_B"                        : 20,

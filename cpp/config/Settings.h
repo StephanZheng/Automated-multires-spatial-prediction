@@ -1,4 +1,4 @@
-// Copyright 2014 Stephan Zheng
+
 
 #ifndef SETTINGS_H
 #define SETTINGS_H
@@ -116,8 +116,10 @@ public:
   int NumberOfColumnsScoreFunction;
   int ScoreFunctionColumnIndexMod;
 
-
   int Dimension_A;
+  int Dimension_B;
+  int Dimension_C;
+
   int StageOne_Dimension_B;
   int StageOne_Dimension_C;
   int StageThree_Dimension_B;

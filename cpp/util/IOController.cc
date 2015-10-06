@@ -1,4 +1,4 @@
-// Copyright 2014 Stephan Zheng
+
 
 #include <boost/chrono.hpp>
 #include <boost/timer.hpp>
@@ -26,27 +26,30 @@
 
 #include "util/IOController.h"
 
-inline void OpenNewFile(string filename) {
+void OpenNewFile(string filename) {
   std::ofstream LogFile(filename, ios::out);
   LogFile << "";
   LogFile.close();
 }
 
-inline void WriteToFile(string filename, float value) {
+void WriteToFile(string filename, float value) {
   WriteToFile<float>(filename, value);
 }
-inline void WriteToFile(string filename, double value) {
+void WriteToFile(string filename, double value) {
   WriteToFile<double>(filename, value);
 }
-inline void WriteToFile(string filename, int value) {
+void WriteToFile(string filename, int value) {
   WriteToFile<int>(filename, value);
 }
-inline void WriteToFile(string filename, string value) {
+void WriteToFile(string filename, string value) {
   WriteToFile<string>(filename, value);
 }
+// void WriteToFile(string filename, char* value) {
+//   WriteToFile<char>(filename, value);
+// }
 
 template <typename T>
-inline void WriteToFile(string filename, T value) {
+void WriteToFile(string filename, T value) {
   std::ofstream LogFile(filename, ios::app);
   if (LogFile.is_open())
   {

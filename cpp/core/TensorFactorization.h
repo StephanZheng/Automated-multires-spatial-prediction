@@ -1,4 +1,4 @@
-// Copyright 2014 Stephan Zheng
+
 
 #ifndef TENSORFACTORIZATION_H
 #define TENSORFACTORIZATION_H

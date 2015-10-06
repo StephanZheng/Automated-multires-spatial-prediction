@@ -31,6 +31,8 @@ public:
   // TODO(stz): not good practice, use accessor etc methods. Being lazy here.
   string name;
   bool debug_mode;
+  void EnableDebugMode() {debug_mode = true;};
+  void DisableDebugMode() {debug_mode = false;};
 
   // index x bin: float
   std::vector<Histogram> histograms_;
@@ -39,9 +41,6 @@ public:
   SpatialEntropy(int n_spatial_cells, int n_bins, float min_value, float max_value);
   void init(int n_spatial_cells, int n_bins, float min_value, float max_value);
   void init(int n_spatial_cells, int n_bins, float min_value, float max_value, float bin_width);
-
-  void EnableDebugMode() {debug_mode = true;};
-  void DisableDebugMode() {debug_mode = false;};
 
   void AddGradientToHistogram(int index, float gradient);
   void AddGradientSignToHistogram(int cell_index, float gradient);
@@ -62,6 +61,7 @@ public:
       histograms_[i].ShowEntropy();
     }
   }
+
   void ShowSummary() {
     for (int i = 0; i < histograms_.size(); i++) {
       PrintFancy() << "Stats for " << histograms_[i].histogram_.name;
@@ -71,7 +71,6 @@ public:
   }
 
   void LogToFile(high_resolution_clock::time_point start_time,
-                 string fn_probability,
                  string fn_entropy) {
 
     float avg_entropy = GetAverageSpatialEntropy();
@@ -80,11 +79,27 @@ public:
     // Write average-entropy
     WriteToFile(fn_entropy, to_string(GetTimeElapsedSince(start_time)) + ",");
     WriteToFile(fn_entropy, to_string(avg_entropy) + "\n");
+  }
 
+  void LogProbabilitiesToFile(high_resolution_clock::time_point start_time,
+                              string fn_probability) {
     // Write probabilities - for external KL divergence computation
     WriteToFile(fn_probability, to_string(GetTimeElapsedSince(start_time)) + ",");
-    WriteToFile(fn_probability, to_string("probabilities") + "\n");
+    for (int i = 0; i < histograms_.size(); i++) {
+      histograms_[i].WriteProbabilityToFile(fn_probability + "_cell" + to_string(i));
+    }
+  }
 
+  void EraseProbabilities() {
+    for (int i = 0; i < histograms_.size(); i++) {
+      histograms_[i].EraseProbabilities();
+    }
+  }
+
+  void EraseHistograms() {
+    for (int i = 0; i < histograms_.size(); i++) {
+      histograms_[i].EraseHistogram();
+    }
   }
 
 protected:

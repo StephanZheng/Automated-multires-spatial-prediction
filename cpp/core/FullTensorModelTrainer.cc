@@ -144,31 +144,18 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
 
   // Debug mode?
   if (Settings_->EnableDebugPrinter_Level1 == 1) {
-    EnableDebugMode();
-    spatial_entropy.EnableDebugMode();
+    // EnableDebugMode();
+    // spatial_entropy.EnableDebugMode();
+    spatial_entropy_sign.EnableDebugMode();
   } else {
     DisableDebugMode();
     spatial_entropy.DisableDebugMode();
+    spatial_entropy_sign.DisableDebugMode();
   }
 
-  // Log files for this session
-  // Loss
-  string logfile_suffix = "_full" + to_string(Settings_->StageOne_Dimension_B) + "_" + to_string(CurrentStateBlob_->session_id);
-
-  string logfile_loss_filename = Settings_->LogFolder + Settings_->LogFile_Loss + logfile_suffix;
-  IOController_->OpenNewFile(logfile_loss_filename);
-  // IOController_->WriteToFile(logfile_loss_filename, "loss_train+loss_valid\n");
-  // Entropy
-  string logfile_entropy_filename = Settings_->LogFolder + Settings_->LogFile_CellEntropy + logfile_suffix;
-  IOController_->OpenNewFile(logfile_entropy_filename);
-  // IOController_->WriteToFile(logfile_entropy_filename, "average_entropy\n");
-
-  // probs
-  string logfile_probs_filename = Settings_->LogFolder + Settings_->LogFile_Probabilities + logfile_suffix;
-  IOController_->OpenNewFile(logfile_probs_filename);
-
-
-
+  string logfile_prefix = to_string(CurrentStateBlob_->session_id);
+  string logfile_suffix = "_full" + to_string(Settings_->StageOne_Dimension_B);
+  initLogFiles(logfile_prefix, logfile_suffix);
 
   // Set the correct number of threads to use in generateTrainingBatches -- this is a slight hack
   Settings_->CurrentNumberOfThreads = Settings_->StageOne_NumberOfThreads;
@@ -273,10 +260,16 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
 
       PrintFancy(Settings_->session_start_time, "M | Computing terms for train-set. Looping over all strong+weak train labels.");
 
+      // ------------------------------------------------------------------------------------------------------------------------------
+      // Clear all empirical frequencies of gradients.
+      // ------------------------------------------------------------------------------------------------------------------------------
+      spatial_entropy.EraseHistograms();
+      spatial_entropy_sign.EraseHistograms();
 
       // ------------------------------------------------------------------------------------------------------------------------------
       // Minibatch stochastic gradient descent
       // ------------------------------------------------------------------------------------------------------------------------------
+
       for (int batch = 0; batch < n_batches; batch++) {
 
         if (n_batches_served % Settings_->StageOne_StatusEveryNBatchesTrain == 0) {
@@ -342,14 +335,24 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
         n_threads_commanded_this_batch = this->generateTrainingBatches(9, batch, n_batches, n_datapoints_processed_so_far_this_epoch, Settings_->StageOne_MiniBatchSize);
         task_queue_.waitForTasksToComplete(n_threads_commanded_this_batch);
 
-        // Compute entropy of accumulated gradients so far.
-        // TODO(stz): implement streaming version of this: how to deal with renormalization per update?
-        spatial_entropy.ComputeEmpiricalDistribution();
-        spatial_entropy.ComputeSpatialEntropy();
-        spatial_entropy.LogToFile(Settings_->session_start_time, logfile_probs_filename, logfile_entropy_filename);
-
+        // Every X batches, we compute and log the spatial entropy.
         if (debug_mode and batch % 100 == 0) {
           spatial_entropy.ShowEntropies();
+        }
+        if (batch % 10 == 0) {
+
+          // Compute and log entropy.
+          ComputeEntropy();
+          LogEntropy();
+
+        }
+        if (batch % 50 == 0) {
+          // Compute and log train loss.
+          IOController_->WriteToFile(logfile_loss_filename_, to_string(GetTimeElapsedSince(Settings_->session_start_time)) + ",");
+          IOController_->WriteToFile(logfile_loss_filename_, to_string(ComputeLoss(6)) + ",");
+          IOController_->WriteToFile(logfile_loss_filename_, to_string('-1') + "\n");
+
+          LogProbabilitiesToFile();
         }
 
         // ------------------------------------------------------------------------------------------------------------------------------
@@ -410,11 +413,11 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
 
         PrintFancy(Settings_->session_start_time, "ComputeConditionalScore Validation");
         // TODO(Stephan) MT - We need to recalculate the ExponentialScores (for train, only ExponentialScores for train-set have been done)!
-        int n_total_labels_valid         = Settings_->NumberOfWeakLabels_Val + Settings_->NumberOfStrongLabels_Val;
-        n_batches_served             = 0;
+        int n_total_labels_valid = Settings_->NumberOfWeakLabels_Val + Settings_->NumberOfStrongLabels_Val;
+        n_batches_served         = 0;
         n_batches                = static_cast<int>(floor(static_cast<float>(n_total_labels_valid) / (Settings_->StageOne_NumberOfThreads * Settings_->StageOne_MiniBatchSize) )) + 1;
-        batch_size                 = Settings_->StageOne_NumberOfThreads;
-        last_batch_size              = 0;
+        batch_size               = Settings_->StageOne_NumberOfThreads;
+        last_batch_size          = 0;
         n_datapoints_processed_so_far_this_epoch = 0;
 
         for (int batch = 0; batch < n_batches; batch++) {
@@ -468,9 +471,9 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
         // -------------------------------------------------------------------------------------------------
         // Write losses to log-file
         // -------------------------------------------------------------------------------------------------
-        IOController_->WriteToFile(logfile_loss_filename, to_string(GetTimeElapsedSince(Settings_->session_start_time)) + ",");
-        IOController_->WriteToFile(logfile_loss_filename, to_string(loss_train) + ",");
-        IOController_->WriteToFile(logfile_loss_filename, to_string(loss_valid) + "\n");
+        IOController_->WriteToFile(logfile_loss_filename_, to_string(GetTimeElapsedSince(Settings_->session_start_time)) + ",");
+        IOController_->WriteToFile(logfile_loss_filename_, to_string(loss_train) + ",");
+        IOController_->WriteToFile(logfile_loss_filename_, to_string(loss_valid) + "\n");
         // -------------------------------------------------------------------------------------------------
       }
 
@@ -710,7 +713,7 @@ void FullTensorModelTrainer::ThreadComputer(int thread_id) {
       }
 
       if (task.task_type == 9) {
-        this->ComputeSpatialEntropy(thread_id, task.index_A, task.frame_id, task.ground_truth_label,
+        this->AddGradientsToHistograms(thread_id, task.index_A, task.frame_id, task.ground_truth_label,
           Settings_->StageOne_Dimension_B,
           Settings_->StageOne_Dimension_C,
           1.0,

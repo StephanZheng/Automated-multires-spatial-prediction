@@ -1,15 +1,13 @@
 {
-  "SpatialEntropy_NumberOfBins"                 : 100,
-  "SpatialEntropy_MinValue"                     : -0.002,
-  "SpatialEntropy_MaxValue"                     : 0.002,
+  "SpatialEntropy_NumberOfBins"                 : 10,
+  "SpatialEntropy_MinValue"                     : -0.01,
+  "SpatialEntropy_MaxValue"                     : 0.01,
   "SpatialEntropy_BinWidth"                     : 0.0,
 
-  "-->CustomTrainingOptions"                    : "",
   "NumberOfGridCells"                           : 2000,
   "StageOne_NumberOfFeaturesBallhandler"        : 2000,
   "StageOne_NumberOfFeaturesDefenders"          : 144,
 
-  "-->Hyperparameters"                          : "",
   "-->ResumeOptions                             :: shouldn't be simultaneously 1 (is accounted for in code":  "",
   "CapScores"                                   : 0,
   "EnableDebugPrinter_Level1"                   : 0,
@@ -36,7 +34,7 @@
   "StageOne_MiniBatchSize"                      : 400,
   "StageOne_NumberOfCrossValidationRuns"        : 10,
   "StageOne_NumberOfEpochs"                     : 10,
-  "StageOne_NumberOfThreads"                    : 1,
+  "StageOne_NumberOfThreads"                    : 40,
   "StageOne_Regularization_Bias_A"              : 0.0,
   "StageOne_Regularization_Bias_Ballhandler"    : 0.0,
   "StageOne_Regularization_Weight_U_Level1"     : 0.1,

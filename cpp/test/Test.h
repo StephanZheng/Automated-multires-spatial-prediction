@@ -1,4 +1,4 @@
-// Copyright 2014 Stephan Zheng
+
 
 #ifndef TEST_H
 #define TEST_H
@@ -20,6 +20,7 @@ using namespace std;
 bool TEST_LT(int a, int b);
 bool TEST_LT(float a, float b);
 bool TEST_LT(double a, double b);
+bool TEST_LT(int a, int b, string m);
 template <typename T>
 bool TEST_LT_(T a, T b);
 

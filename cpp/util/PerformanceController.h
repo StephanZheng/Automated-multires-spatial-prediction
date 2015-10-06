@@ -1,4 +1,4 @@
-// Copyright 2014 Stephan Zheng
+
 
 #ifndef PERFORMANCECONTROLLER_H
 #define PERFORMANCECONTROLLER_H

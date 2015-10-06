@@ -1,4 +1,4 @@
-// Copyright 2014 Stephan Zheng
+
 
 #ifndef IOCONTROLLER_H
 #define IOCONTROLLER_H
@@ -40,6 +40,7 @@ void WriteToFile(string filename, float value);
 void WriteToFile(string filename, double value);
 void WriteToFile(string filename, int value);
 void WriteToFile(string filename, string value);
+// void WriteToFile(string filename, const char* value);
 template <typename T>
 void WriteToFile(string filename, T value);
 
@@ -78,6 +79,9 @@ class IOController {
   void WriteToFile(string filename, string value) {
     WriteToFile<string>(filename, value);
   }
+  // void WriteToFile(string filename, const char* value) {
+  //   WriteToFile<string>(filename, value);
+  // }
 
   template <typename T>
   void WriteToFile(string filename, T value) {

@@ -1,4 +1,4 @@
-// Copyright 2014 Stephan Zheng
+
 
 #ifndef FULLTENSORMODELTRAINER_H
 #define FULLTENSORMODELTRAINER_H

@@ -1,4 +1,4 @@
-// Copyright 2014 Stephan Zheng
+
 
 #ifndef QUEUEMESSAGE_H
 #define QUEUEMESSAGE_H

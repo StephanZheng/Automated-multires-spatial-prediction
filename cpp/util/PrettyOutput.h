@@ -1,5 +1,3 @@
-// Copyright 2014 Stephan Zheng
-
 #ifndef PRETTYOUTPUT_H
 #define PRETTYOUTPUT_H
 

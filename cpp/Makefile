@@ -15,7 +15,7 @@ LIB_DIR = \
 -L/home/ubuntu/robustmultitask_devstack/lib/boost_1_57_0/stage/lib \
 -L/home/stzheng/lib/boost_1_57_0/stage/lib
 
-LDFLAGS = -lboost_thread -lboost_system
+LDFLAGS = -lboost_thread -lboost_filesystem -lboost_system
 CFLAGS = -w -g $(LIB_DIR) $(INC_DIR) -std=c++11 -m64
 OPTFLAGS = -Ofast
 SOURCES = \

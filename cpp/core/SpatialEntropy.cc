@@ -11,14 +11,14 @@ void SpatialEntropy::init(int n_spatial_cells, int n_bins, float min_value, floa
 
 void SpatialEntropy::init(int n_spatial_cells, int n_bins, float min_value, float max_value, float bin_width) {
 
-  PrintFancy() << "Hi! Initializing spatial entropy now." << endl;
-  PrintFancy() << "n_spatial_cells " << n_spatial_cells << endl;
-  PrintFancy() << "n_bins " << n_bins << endl;
-  PrintFancy() << "min_value " << min_value << endl;
-  PrintFancy() << "max_value " << max_value << endl;
-  PrintFancy() << "bin_width " << bin_width << endl;
+  // PrintFancy() << "Hi! Initializing spatial entropy now." << endl;
+  // PrintFancy() << "n_spatial_cells " << n_spatial_cells << endl;
+  // PrintFancy() << "n_bins " << n_bins << endl;
+  // PrintFancy() << "min_value " << min_value << endl;
+  // PrintFancy() << "max_value " << max_value << endl;
+  // PrintFancy() << "bin_width " << bin_width << endl;
 
-  name = "SpatialEntropy_" + to_string(n_spatial_cells) + "bins";
+  name = "SpatialEntropy_" + to_string(n_spatial_cells) + "cells_" + to_string(n_bins) + "bins";
 
   // Every spatial cell has a histogram associated to it.
   histograms_.resize(n_spatial_cells);
@@ -40,8 +40,8 @@ void SpatialEntropy::init(int n_spatial_cells, int n_bins, float min_value, floa
 
 void SpatialEntropy::AddGradientToHistogram(int cell_index, float gradient) {
   // We have n_spatial_cells
-  TEST_LT(cell_index, (int)histograms_.size());
   if (debug_mode) PrintFancy() << name << "::AddGradientToSpatialEntropy cell " << cell_index << " grad " << gradient << endl;
+  TEST_LT(cell_index, (int)histograms_.size());
   if (cell_index >= 0 and cell_index < histograms_.size()){
     histograms_[cell_index].Add(gradient);
   }

@@ -14,12 +14,18 @@ bool TEST_LT(double a, double b) {
   return TEST_LT_<double>(a, b);
 }
 
+bool TEST_LT(int a, int b, string m) {
+  cout << "Called from: " << m << endl;
+  TEST_LT_<int>(a, b);
+}
+
 template <typename T>
 bool TEST_LT_(T a, T b) {
   if (a < b) {
     return true;
   } else {
     PrintFancy() << "Check a < b failed with a " << a << " b " << b << endl;
+    assert(a<b);
     return false;
   }
 }
@@ -42,20 +48,21 @@ bool TEST_GT_(T a, T b) {
     return true;
   } else {
     PrintFancy() << "Check a > b failed with a " << a << " b " << b << endl;
+    assert(a>b);
     return false;
   }
 }
 
 bool TEST_LE(int a, int b) {
-  return TEST_LT_<int>(a, b);
+  return TEST_LE_<int>(a, b);
 }
 
 bool TEST_LE(float a, float b) {
-  return TEST_LT_<float>(a, b);
+  return TEST_LE_<float>(a, b);
 }
 
 bool TEST_LE(double a, double b) {
-  return TEST_LT_<double>(a, b);
+  return TEST_LE_<double>(a, b);
 }
 
 template <typename T>
@@ -64,6 +71,7 @@ bool TEST_LE_(T a, T b) {
     return true;
   } else {
     PrintFancy() << "Check a <= b failed with a " << a << " b " << b << endl;
+    assert(a<=b);
     return false;
   }
 }
@@ -100,6 +108,7 @@ bool TEST_EQ_(T a, T b) {
     return true;
   } else {
     PrintFancy() << "Check a == b failed with a " << a << " b " << b << endl;
+    assert(a>=b);
     return false;
   }
 }

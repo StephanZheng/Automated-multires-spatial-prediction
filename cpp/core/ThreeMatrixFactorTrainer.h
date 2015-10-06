@@ -1,4 +1,4 @@
-// Copyright 2014 Stephan Zheng
+
 
 #ifndef THREEMATRIXFACTORTRAINER_H
 #define THREEMATRIXFACTORTRAINER_H

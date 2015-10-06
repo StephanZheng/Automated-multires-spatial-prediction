@@ -11,6 +11,7 @@
 #include <fstream>
 
 #include "core/DataBlob.h"
+#include "util/IOController.h"
 #include "util/PrettyOutput.h"
 #include "test/Test.h"
 
@@ -30,6 +31,8 @@ public:
 
   // Histogram also has a counter "n_illegal_values_seen" for values that are not of the right type (NaNs etc).
   int n_illegal_values_seen_;
+  int n_outliers_lower_;
+  int n_outliers_upper_;
 
   float log_stability_threshold;
 
@@ -57,15 +60,16 @@ public:
     assert(max_value > min_value);
 
     // Histogram adds 2 bins for values that lie outside the range.
-    histogram_.init(n_bins+2);
+    histogram_.init(n_bins);
     probabilities_.init(n_bins);
+
     min_value_ = min_value;
     max_value_ = max_value;
     bin_width_ = bin_width;
 
     // Note that we include the catch all bins here.
     // The convention is that n_bins == histogram_.size().
-    n_bins_ = n_bins+2;
+    n_bins_ = n_bins;
 
     // To prevent log overflow.
     log_stability_threshold = 1e-20;
@@ -73,7 +77,7 @@ public:
     // Initialize entropy holder to empty!
     entropy_.init(0);
 
-    showProperties();
+    // showProperties();
   }
 
   // Histogram of counts.
@@ -81,16 +85,24 @@ public:
   void Add(float value);
 
   // Statistics
-  void recordExtrema(float value);
+  void RecordExtrema(float value);
   void ComputeProbabilities();
   void ComputeEntropy();
+
+  void EraseProbabilities() {
+    probabilities_.erase();
+  }
+  void EraseHistogram() {
+    histogram_.erase();
+  }
 
   // Utility functions
   int size() const {
     return histogram_.size();
   }
   int GetNumberOfLegalBins() {
-    return n_bins_ - 2;
+    assert(n_bins_ > 0); // We need at least 1 + 2 bins (2 catch-all and 1 legal)
+    return n_bins_;
   }
   int GetNumberOfAllBins() {
     TEST_EQ(n_bins_, size());
@@ -98,15 +110,21 @@ public:
   }
   float GetLegalRangeTotal() {
     float count = 0;
-    for (int i = 1; i < n_bins_ - 1; i++) {
+    TEST_GE(n_bins_, 1);
+    for (int i = 0; i < n_bins_; i++) {
       count += histogram_.at(i);
     }
     return count;
   }
-
+  void WriteProbabilityToFile(string fn_probability) {
+    for (auto prob : probabilities_.data) {
+      WriteToFile(fn_probability, to_string(prob) + ",");
+    }
+    WriteToFile(fn_probability, to_string('\n'));
+  }
 
   // Diagnostics
-  void CheckIsProbability(float probability);
+  bool CheckIsProbability(float probability);
   float ShowEntropy();
   void showProperties() {
     PrintFancy() << "Properties of histogram [" << histogram_.name << "]" << endl;

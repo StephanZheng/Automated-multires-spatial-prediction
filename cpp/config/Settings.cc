@@ -27,6 +27,8 @@ void Settings::loadSettingsJSON(const char * fn_settings_file) {
     if (ss.compare("DATASET_NAME")                                   == 0) DATASET_NAME = itr->value.GetString();
     if (ss.compare("DesiredSparsityLevel")                           == 0) DesiredSparsityLevel = itr->value.GetDouble();
     if (ss.compare("Dimension_A")                                    == 0) Dimension_A = itr->value.GetInt();
+    if (ss.compare("Dimension_B")                                    == 0) Dimension_B = itr->value.GetInt();
+    if (ss.compare("Dimension_C")                                    == 0) Dimension_C = itr->value.GetInt();
     if (ss.compare("Dimension_B_BiasSlice")                          == 0) Dimension_B_BiasSlice = itr->value.GetInt();
     if (ss.compare("Dimension_C_BiasSlice")                          == 0) Dimension_C_BiasSlice = itr->value.GetInt();
     if (ss.compare("DummyMultiplier")                                == 0) DummyMultiplier = itr->value.GetInt();

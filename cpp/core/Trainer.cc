@@ -1225,29 +1225,30 @@ float Trainer::cap(int thread_id, int index_A, int frame_id, float score, float 
   }
 }
 
-void Trainer::ComputeSpatialEntropy(int thread_id,
+void Trainer::AddGradientsToHistograms(int thread_id,
   int index_A,
   int frame_id,
   int ground_truth_label,
-  int n_dimension_B, //           = Settings_->StageOne_Dimension_B;
-  int n_dimension_C, //          = Settings_->StageOne_Dimension_C;
+  int n_dimension_B,
+  int n_dimension_C,
   float dresponsefunction_dB,
-  int MiniBatchSize // = Settings_->StageOne_MiniBatchSize
+  int MiniBatchSize
   ) {
   MatrixBlob *ConditionalScore = &(this->ConditionalScore);
-  float strongweakweight       = 0.;
-  float dP_df                  = 0.;
   float U_gradient             = 0.;
+  float U_gradient_sign        = 0.;
   float ExponentialScore       = ConditionalScore->at(frame_id, index_A % Settings_->ScoreFunctionColumnIndexMod);
+  float dP_df                  = 0.;
   float df_dB                  = dresponsefunction_dB;
+  float strongweakweight       = 0.;
 
-  if (ground_truth_label == 0) {
+  if ( ground_truth_label == 0) {
     strongweakweight = Settings_->LossWeightWeak;
-    dP_df = 1.0 / ( 1.0 + exp(-ExponentialScore) );
+    dP_df = 1.0 / (1.0 + exp(-ExponentialScore));
   } else {
-    assert(ground_truth_label == 1);
+    assert(  ground_truth_label == 1);
     strongweakweight = Settings_->LossWeightStrong;
-    dP_df = -1.0 / ( 1.0 + exp(ExponentialScore) );
+    dP_df = -1.0 / (1.0 + exp(ExponentialScore));
   }
 
   std::vector<int> indices_B = this->getIndices_B(frame_id, 1);
@@ -1255,10 +1256,23 @@ void Trainer::ComputeSpatialEntropy(int thread_id,
 
   U_gradient = strongweakweight * dP_df * df_dB / MiniBatchSize;
 
+  // For the case where we only keep track of the sign of the gradient,
+  // we use a histogram with 2 bins: [-1, 0] and [0, 1]. Positive gradients
+  // are mapped to 0.5 and negative gradients to -0.1. If an illegal value
+  // appears, we put it in the first catch-all bin and map it to -1.5.
+  if (U_gradient >= 0.) {
+    U_gradient_sign = 0.5;
+  } else if (U_gradient < 0.) {
+    U_gradient_sign = -0.5;
+  } else {
+    U_gradient_sign = -1.5;
+  }
+
   // Process all positions in this feature vector
   // Watch out: our position features have a stop token in the last slot, which we should *NOT* process!
   for (int i = 0; i < indices_B.size() - 1; i++) {
     int index_B = indices_B[i];
     spatial_entropy.AddGradientToHistogram(index_B, U_gradient);
+    spatial_entropy_sign.AddGradientToHistogram(index_B, U_gradient_sign);
   }
 }

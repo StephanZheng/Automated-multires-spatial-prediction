@@ -1,4 +1,4 @@
-// Copyright 2014 Stephan Zheng
+
 
 #ifndef DATABLOB_H
 #define DATABLOB_H

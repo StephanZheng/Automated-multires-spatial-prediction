@@ -1,8 +1,9 @@
-// Copyright 2014 Stephan Zheng
+
 
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
+#include <boost/filesystem.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/numeric/ublas/matrix_sparse.hpp>
 #include <boost/numeric/ublas/vector.hpp>
@@ -53,6 +54,18 @@ public:
   void DisableDebugMode() {debug_mode = false;};
 
   SpatialEntropy spatial_entropy;
+  SpatialEntropy spatial_entropy_sign;
+
+  string logfile_loss_filename_;
+  string logfile_entropy_filename_;
+  string logfile_probs_filename_;
+  string logfile_entropy_sign_filename_;
+  string logfile_probs_sign_filename_;
+
+  // We use this to store the gradient from the response function.
+  // This has to be computed once, so all threads can use it when
+  // computing the spatial entropy.
+  float dresponsefunction_dB_;
 
   int         CheckIfFloatIsNan(float x, string y);
 
@@ -116,21 +129,16 @@ public:
   int _dummy_index_A_to_test_mt;
 
   Trainer() {}
-  Trainer(int dima, int bins, float minval, float maxval) :
-    spatial_entropy(dima,
+  Trainer(int n_spatial_cells, int bins, float minval, float maxval) :
+    spatial_entropy(n_spatial_cells,
                     bins,
                     minval,
-                    maxval) {
+                    maxval), \
+    spatial_entropy_sign(n_spatial_cells,
+                    2,
+                    -1.0,
+                    1.0) {
   }
-
-  void ComputeSpatialEntropy(int thread_id,
-                              int index_A,
-                              int frame_id,
-                              int ground_truth_label,
-                              int n_dimension_B, //           = Settings_->StageOne_Dimension_B;
-                              int n_dimension_C, //          = Settings_->StageOne_Dimension_C;
-                              float dresponsefunction_dB,
-                              int MiniBatchSize);
 
   int         GetExpectedSizeSnapshotFile(Settings * s);
 
@@ -219,6 +227,70 @@ public:
               VectorBlob *parameter_update_squared_cache,
               std::vector<float>  *NestorovMomentumPreviousParameter_,
               int n_elements);
+
+  void initLogFiles(string logfile_prefix, string logfile_suffix) {
+    // Log files for this session
+
+    // Make directory where log files will be located
+    string dir_path = Settings_->LogFolder + "/" + logfile_prefix + logfile_suffix;
+    boost::filesystem::path dir(dir_path);
+    if(boost::filesystem::create_directory(dir)) {
+      std::cout << "Success creating " << dir_path << "\n";
+    }
+
+    // Loss
+    logfile_loss_filename_ = dir_path + Settings_->LogFile_Loss + logfile_suffix;
+    IOController_->OpenNewFile(logfile_loss_filename_);
+
+    // Entropy
+    logfile_entropy_filename_ = dir_path + Settings_->LogFile_CellEntropy + logfile_suffix;
+    IOController_->OpenNewFile(logfile_entropy_filename_);
+    // probs
+    logfile_probs_filename_ = dir_path + Settings_->LogFile_Probabilities + logfile_suffix;
+    IOController_->OpenNewFile(logfile_probs_filename_);
+
+    // Entropy - sign-only
+    logfile_entropy_sign_filename_ = dir_path + Settings_->LogFile_CellEntropy + "_sign" + logfile_suffix;
+    IOController_->OpenNewFile(logfile_entropy_sign_filename_);
+    // probs - sign-only
+    logfile_probs_sign_filename_ = dir_path + Settings_->LogFile_Probabilities + "_sign" + logfile_suffix;
+    IOController_->OpenNewFile(logfile_probs_sign_filename_);
+  }
+
+
+
+  void AddGradientsToHistograms(int thread_id,
+                              int index_A,
+                              int frame_id,
+                              int ground_truth_label,
+                              int n_dimension_B, //           = Settings_->StageOne_Dimension_B;
+                              int n_dimension_C, //          = Settings_->StageOne_Dimension_C;
+                              float dresponsefunction_dB,
+                              int MiniBatchSize);
+
+  void ComputeEntropy() {
+    // Compute entropy of accumulated gradients so far.
+    // TODO(stz): implement streaming version of this: how to deal with renormalization per update?
+    spatial_entropy.ComputeEmpiricalDistribution();
+    spatial_entropy.ComputeSpatialEntropy();
+
+    spatial_entropy_sign.ComputeEmpiricalDistribution();
+    spatial_entropy_sign.ComputeSpatialEntropy();
+  }
+
+  void LogEntropy() {
+
+    spatial_entropy.LogToFile(Settings_->session_start_time, logfile_entropy_filename_);
+    spatial_entropy_sign.LogToFile(Settings_->session_start_time, logfile_entropy_sign_filename_);
+
+    // spatial_entropy.RecordExtrema();
+  }
+
+  void LogProbabilitiesToFile() {
+    spatial_entropy.LogProbabilitiesToFile(Settings_->session_start_time, logfile_probs_filename_);
+    spatial_entropy_sign.LogProbabilitiesToFile(Settings_->session_start_time, logfile_probs_sign_filename_);
+  }
+
 };
 
 #endif

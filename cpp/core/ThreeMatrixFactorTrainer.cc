@@ -1,4 +1,4 @@
-// Copyright 2014 Stephan Zheng
+
 
 #include "core/ThreeMatrixFactorTrainer.h"
 
@@ -463,9 +463,6 @@ int ThreeMatrixFactorTrainer::TrainStageThree(string fp_snapshot) {
 
   CurrentStateBlob->current_stage = 3;
 
-
-
-
   // Debug mode?
   if (Settings_->EnableDebugPrinter_Level1 == 1) {
     EnableDebugMode();
@@ -476,20 +473,9 @@ int ThreeMatrixFactorTrainer::TrainStageThree(string fp_snapshot) {
   }
 
   // Log files for this session
-  string logfile_suffix = "_3factor" + to_string(Settings_->StageThree_Dimension_B) + "_" + to_string(CurrentStateBlob_->session_id);
-  // Loss
-  string logfile_loss_filename = Settings_->LogFolder + Settings_->LogFile_Loss + logfile_suffix;
-  IOController_->OpenNewFile(logfile_loss_filename);
-
-  // Entropy
-  string logfile_entropy_filename = Settings_->LogFolder + Settings_->LogFile_CellEntropy + logfile_suffix;
-  IOController_->OpenNewFile(logfile_entropy_filename);
-
-  // probs
-  string logfile_probs_filename = Settings_->LogFolder + Settings_->LogFile_Probabilities + logfile_suffix;
-  IOController_->OpenNewFile(logfile_probs_filename);
-
-
+  string logfile_prefix = to_string(CurrentStateBlob_->session_id);
+  string logfile_suffix = "_3factor" + to_string(Settings_->StageThree_Dimension_B);
+  initLogFiles(logfile_prefix, logfile_suffix);
 
   // Set the correct number of threads to use in generateTrainingBatches -- this is a slight hack
   Settings_->CurrentNumberOfThreads = Settings_->StageThree_NumberOfThreads;
@@ -785,31 +771,25 @@ int ThreeMatrixFactorTrainer::TrainStageThree(string fp_snapshot) {
           task_queue_.waitForTasksToComplete(n_threads_commanded_this_batch);
         }
 
-
-
-
-
-
         // ------------------------------------------------------------------------------------------------------------------------------
         // Compute spatial entropy of gradients
         // ------------------------------------------------------------------------------------------------------------------------------
+
         // Add gradients of minibatch to histogram -- this is paralellized
         n_threads_commanded_this_batch = this->generateTrainingBatches(20, batch, n_batches, n_datapoints_processed_so_far_this_epoch, Settings_->StageThree_MiniBatchSize);
         task_queue_.waitForTasksToComplete(n_threads_commanded_this_batch);
 
-        // Compute entropy of accumulated gradients so far.
-        // TODO(stz): implement streaming version of this: how to deal with renormalization per update?
-        spatial_entropy.ComputeEmpiricalDistribution();
-        spatial_entropy.ComputeSpatialEntropy();
-        spatial_entropy.LogToFile(Settings_->session_start_time, logfile_probs_filename, logfile_entropy_filename);
-
+        // Every X batches, we compute and log the spatial entropy.
         if (debug_mode and batch % 100 == 0) {
           spatial_entropy.ShowEntropies();
         }
-
-
-
-
+        if (batch % 10 == 0) {
+          ComputeEntropy();
+          LogEntropy();
+        }
+        if (batch % 50 == 0) {
+          LogProbabilitiesToFile();
+        }
 
         // ====================================================================================
         // Apply momentum
@@ -1007,9 +987,9 @@ int ThreeMatrixFactorTrainer::TrainStageThree(string fp_snapshot) {
         // -------------------------------------------------------------------------------------------------
         // Write losses to log-file
         // -------------------------------------------------------------------------------------------------
-        IOController_->WriteToFile(logfile_loss_filename, to_string(GetTimeElapsedSince(Settings_->session_start_time)) + ",");
-        IOController_->WriteToFile(logfile_loss_filename, to_string(loss_train) + ",");
-        IOController_->WriteToFile(logfile_loss_filename, to_string(loss_valid) + "\n");
+        IOController_->WriteToFile(logfile_loss_filename_, to_string(GetTimeElapsedSince(Settings_->session_start_time)) + ",");
+        IOController_->WriteToFile(logfile_loss_filename_, to_string(loss_train) + ",");
+        IOController_->WriteToFile(logfile_loss_filename_, to_string(loss_valid) + "\n");
         // -------------------------------------------------------------------------------------------------
 
       }
@@ -1272,10 +1252,19 @@ void ThreeMatrixFactorTrainer::ThreadComputer(int thread_id) {
       }
 
       if (task.task_type == 20) {
-        this->ComputeSpatialEntropy(thread_id, task.index_A, task.frame_id, task.ground_truth_label,
+
+        std::vector<int> indices_C = getIndices_C(task.frame_id, 3);
+
+        // First compute the response function gradient, when we can compute the entire gradient for spatial entropy.
+        dresponsefunction_dB_ = 0.;
+        for (int latent_index = 0; latent_index < Settings_->NumberOfLatentDimensions; latent_index++) {
+          dresponsefunction_dB_ += ComputeProductPsiPsiAC(thread_id, task.frame_id, task.index_A, latent_index, &LF_A, &LF_C, &indices_C);
+        }
+
+        this->AddGradientsToHistograms(thread_id, task.index_A, task.frame_id, task.ground_truth_label,
           Settings_->StageThree_Dimension_B,
           Settings_->StageThree_Dimension_C,
-          1.0,
+          dresponsefunction_dB_,
           Settings_->StageThree_MiniBatchSize);
       }
 
@@ -1990,6 +1979,7 @@ inline void ThreeMatrixFactorTrainer::ComputeLF_B_Update(int thread_id, int inde
     this->ComputeLF_B_Update_Core(thread_id, index_A, frame_id, ground_truth_label, &indices_BB, &indices_CC, 2);
   }
 }
+
 inline void ThreeMatrixFactorTrainer::ComputeLF_B_Update_Core(int thread_id, int index_A, int frame_id, int ground_truth_label, std::vector<int> *indices_B, std::vector<int> *indices_C, int SpatRegLevel) {
 
   if (Settings_->EnableDebugPrinter_Level1 == 1 and thread_id == 0 and frame_id % 500000 == 0) {
@@ -2180,6 +2170,10 @@ inline void ThreeMatrixFactorTrainer::ComputeLF_B_Update_Core(int thread_id, int
     }
   }
 }
+
+
+
+
 inline void ThreeMatrixFactorTrainer::ProcessLF_B_Updates(int thread_id, int index_A) {
   // PrintFancy(Settings_->session_start_time, "T"+to_string(thread_id) + " - ProcessLF_A_Updates");
   Settings   *Settings_     = this->Settings_;

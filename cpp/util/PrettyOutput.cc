@@ -1,4 +1,4 @@
-// Copyright 2014 Stephan Zheng
+
 
 #include <time.h>
 #include <stdlib.h>
