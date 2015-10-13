@@ -30,3 +30,7 @@ echo ""
 # echo $STR
 
 # echo "$STR" | mailx -s "[CMS] Stage 3 sparse + latent factor model :: run $kk is finished" st.t.zheng@gmail.com
+
+
+
+| mailx -s "data" st.t.zheng@gmail.com

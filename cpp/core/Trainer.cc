@@ -1187,17 +1187,17 @@ void Trainer::LoadSnapshotWeight( VectorBlob * blob, string fn, int size_of_cont
   delete float_;
   fclose(fp);
 }
-int Trainer::GetExpectedSizeSnapshotFile(Settings * s){
-  Settings *Settings_   = this->Settings_;
 
+
+int Trainer::GetExpectedSizeSnapshotFile(Settings * s) {
+  Settings *Settings_   = this->Settings_;
   PrintFancy(Settings_->session_start_time, "Volatile!!! Bias must be loaded from a snapshot, but we interchangably use snapshots from S1, S3 LR-only and S3 L+S. Fix this in the future.");
 
   // Use when loading from a L+S snapshot
   if (Settings_->DATASET_NAME == "bb") {
     PrintFancy(Settings_->session_start_time, "Basketball: use low-res L+S snapshot with latent dim 10 (at this time, has the best performance)");
-    return (Settings_->Dimension_A + Settings_->StageOne_Dimension_B + Settings_->StageOne_Dimension_C) * 10 \
-        + Settings_->Dimension_A * Settings_->StageOne_Dimension_B * Settings_->StageOne_Dimension_C \
-        + Settings_->Dimension_A;
+    return Settings_->Dimension_A * Settings_->StageOne_Dimension_B * Settings_->StageOne_Dimension_C + \
+          Settings_->Dimension_A; // (Settings_->Dimension_A + Settings_->StageOne_Dimension_B + Settings_->StageOne_Dimension_C)
   }
   if (Settings_->DATASET_NAME == "fvf") {
     // PrintFancy(Settings_->session_start_time, "FvF: use L+S snapshot with latent dim 3 (at this time, has the best performance)");
@@ -1208,6 +1208,8 @@ int Trainer::GetExpectedSizeSnapshotFile(Settings * s){
   }
   // return Settings_->Dimension_A * Settings_->StageOne_Dimension_B * Settings_->StageOne_Dimension_C + Settings_->Dimension_A;
 }
+
+
 float Trainer::cap(int thread_id, int index_A, int frame_id, float score, float cap_hi, float cap_lo) {
   Settings  *Settings_    = this->Settings_;
   if (score > cap_hi) {

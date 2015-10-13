@@ -44,6 +44,8 @@ void WriteToFile(string filename, string value);
 template <typename T>
 void WriteToFile(string filename, T value);
 
+void WriteNewlineToFile(string filename);
+
 class IOController {
   public:
   string name;
@@ -89,6 +91,18 @@ class IOController {
     if (LogFile.is_open())
     {
       LogFile << value;
+      LogFile.close();
+    }
+    else {
+      PrintFancy() << "Unable to open file " << filename << endl;
+    }
+  }
+
+  void WriteNewlineToFile(string filename) {
+    std::ofstream LogFile(filename, ios::app);
+    if (LogFile.is_open())
+    {
+      LogFile << endl;
       LogFile.close();
     }
     else {

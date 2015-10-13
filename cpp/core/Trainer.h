@@ -62,6 +62,9 @@ public:
   string logfile_entropy_sign_filename_;
   string logfile_probs_sign_filename_;
 
+  string logfile_entropies_per_cell_filename_;
+  string logfile_entropies_sign_per_cell_filename_;
+
   // We use this to store the gradient from the response function.
   // This has to be computed once, so all threads can use it when
   // computing the spatial entropy.
@@ -249,12 +252,18 @@ public:
     logfile_probs_filename_ = dir_path + Settings_->LogFile_Probabilities + logfile_suffix;
     IOController_->OpenNewFile(logfile_probs_filename_);
 
+    logfile_entropies_per_cell_filename_ = dir_path + "/logfile_entropy_per_cell" + logfile_suffix;
+    IOController_->OpenNewFile(logfile_entropies_per_cell_filename_);
+
     // Entropy - sign-only
     logfile_entropy_sign_filename_ = dir_path + Settings_->LogFile_CellEntropy + "_sign" + logfile_suffix;
     IOController_->OpenNewFile(logfile_entropy_sign_filename_);
     // probs - sign-only
     logfile_probs_sign_filename_ = dir_path + Settings_->LogFile_Probabilities + "_sign" + logfile_suffix;
     IOController_->OpenNewFile(logfile_probs_sign_filename_);
+
+    logfile_entropies_sign_per_cell_filename_ = dir_path + "/logfile_entropy_per_cell" + "_sign" + logfile_suffix;
+    IOController_->OpenNewFile(logfile_entropies_sign_per_cell_filename_);
   }
 
 
@@ -289,6 +298,11 @@ public:
   void LogProbabilitiesToFile() {
     spatial_entropy.LogProbabilitiesToFile(Settings_->session_start_time, logfile_probs_filename_);
     spatial_entropy_sign.LogProbabilitiesToFile(Settings_->session_start_time, logfile_probs_sign_filename_);
+  }
+
+  void LogEntropiesToFile() {
+    spatial_entropy.LogEntropiesToFile(Settings_->session_start_time, logfile_entropies_per_cell_filename_);
+    spatial_entropy_sign.LogEntropiesToFile(Settings_->session_start_time, logfile_entropies_sign_per_cell_filename_);
   }
 
 };

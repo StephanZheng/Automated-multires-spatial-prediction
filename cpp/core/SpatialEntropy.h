@@ -54,6 +54,7 @@ public:
     PrintFancy() << "Showing histograms for [" << name << "]";
     for (int i = 0; i < histograms_.size(); i++) {
       histograms_[i].showProperties();
+      histograms_[i].showContents(20, 1);
     }
   }
   void ShowEntropies() {
@@ -84,11 +85,22 @@ public:
   void LogProbabilitiesToFile(high_resolution_clock::time_point start_time,
                               string fn_probability) {
     // Write probabilities - for external KL divergence computation
-    WriteToFile(fn_probability, to_string(GetTimeElapsedSince(start_time)) + ",");
     for (int i = 0; i < histograms_.size(); i++) {
+      WriteToFile(fn_probability, to_string(GetTimeElapsedSince(start_time)) + ",");
       histograms_[i].WriteProbabilityToFile(fn_probability + "_cell" + to_string(i));
     }
   }
+
+  void LogEntropiesToFile(high_resolution_clock::time_point start_time,
+                              string fn_entropies) {
+    // Write probabilities - for external KL divergence computation
+    for (int i = 0; i < histograms_.size(); i++) {
+      WriteToFile(fn_entropies, to_string(GetTimeElapsedSince(start_time)) + ",");
+      histograms_[i].WriteEntropiesToFile(fn_entropies + "_cell" + to_string(i));
+    }
+  }
+
+
 
   void EraseProbabilities() {
     for (int i = 0; i < histograms_.size(); i++) {

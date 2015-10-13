@@ -82,7 +82,7 @@ void Histogram::ComputeEntropy() {
 
     // Only compute entropy if log(prob) is not going to cause overflow.
     if (probability > log_stability_threshold) {
-      entropy += probability * std::log(probability);
+      entropy += -probability * std::log(probability);
     }
   }
   entropy_.push_back(entropy);

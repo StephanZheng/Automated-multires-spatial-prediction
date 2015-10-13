@@ -61,6 +61,18 @@ void WriteToFile(string filename, T value) {
   }
 }
 
+void WriteNewlineToFile(string filename) {
+  std::ofstream LogFile(filename, ios::app);
+  if (LogFile.is_open())
+  {
+    LogFile << endl;
+    LogFile.close();
+  }
+  else {
+    PrintFancy() << "Unable to open file " << filename << endl;
+  }
+}
+
 void writeBlobToFile(FILE * fp, VectorBlob * v) {
   for (int i = 0; i < v->data.size(); ++i) fwrite(&v->data[i], sizeof(float), 1, fp);
 }

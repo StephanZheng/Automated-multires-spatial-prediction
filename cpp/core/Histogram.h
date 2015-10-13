@@ -117,10 +117,18 @@ public:
     return count;
   }
   void WriteProbabilityToFile(string fn_probability) {
-    for (auto prob : probabilities_.data) {
+    for (int i = 0; i < probabilities_.data.size(); i++) {
+      float prob = probabilities_.data[i];
       WriteToFile(fn_probability, to_string(prob) + ",");
     }
-    WriteToFile(fn_probability, to_string('\n'));
+    WriteNewlineToFile(fn_probability);
+  }
+
+  void WriteEntropiesToFile(string fn_entropies) {
+    for (auto entropy : entropy_.data) {
+      WriteToFile(fn_entropies, to_string(entropy) + ",");
+    }
+    WriteNewlineToFile(fn_entropies);
   }
 
   // Diagnostics
@@ -135,7 +143,7 @@ public:
     PrintFancy() << "log_stability_threshold " << log_stability_threshold << endl;
   }
   void showContents(int lim, int lb) {
-    showProperties();
+    // showProperties();
     histogram_.showVectorContents(lim, lb);
   }
 };

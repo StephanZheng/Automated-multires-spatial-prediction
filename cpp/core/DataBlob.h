@@ -100,7 +100,7 @@ public:
   void init(int _columns) {
     data.resize(_columns);
     columns = _columns;
-    PrintFancy() << "Initialized VectorBlob [" << name << "] with " << columns << " " << data.size() << " columns" << endl;
+    // PrintFancy() << "Initialized VectorBlob [" << name << "] with " << columns << " " << data.size() << " columns" << endl;
   }
   void erase() {
     for (int i; i < data.size(); i++) {

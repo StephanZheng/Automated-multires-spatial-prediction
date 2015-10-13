@@ -260,9 +260,11 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
 
       PrintFancy(Settings_->session_start_time, "M | Computing terms for train-set. Looping over all strong+weak train labels.");
 
+
       // ------------------------------------------------------------------------------------------------------------------------------
       // Clear all empirical frequencies of gradients.
       // ------------------------------------------------------------------------------------------------------------------------------
+      PrintFancy() << "Erasing counts of gradients.";
       spatial_entropy.EraseHistograms();
       spatial_entropy_sign.EraseHistograms();
 
@@ -271,6 +273,15 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
       // ------------------------------------------------------------------------------------------------------------------------------
 
       for (int batch = 0; batch < n_batches; batch++) {
+
+        // ------------------------------------------------------------------------------------------------------------------------------
+        // Clear all empirical frequencies of gradients.
+        // ------------------------------------------------------------------------------------------------------------------------------
+        if (Settings_->EraseEntropyEveryBatch == 1) {
+          // PrintFancy() << "Erasing counts of gradients @ batch " << batch << endl;
+          // spatial_entropy.EraseHistograms();
+          // spatial_entropy_sign.EraseHistograms();
+        }
 
         if (n_batches_served % Settings_->StageOne_StatusEveryNBatchesTrain == 0) {
           PrintFancy(Settings_->session_start_time, "M | Batch "+to_string(n_batches_served) );
@@ -336,22 +347,33 @@ int FullTensorModelTrainer::TrainStageOne(string fp_snapshot) {
         task_queue_.waitForTasksToComplete(n_threads_commanded_this_batch);
 
         // Every X batches, we compute and log the spatial entropy.
-        if (debug_mode and batch % 100 == 0) {
+        if (batch > 0 and debug_mode and batch % 100 == 0) {
           spatial_entropy.ShowEntropies();
         }
-        if (batch % 10 == 0) {
-
+        if (batch > 0 and batch % Settings_->ComputeEntropyFrequency == 0) {
+          high_resolution_clock::time_point start_time_entropy = high_resolution_clock::now();
           // Compute and log entropy.
           ComputeEntropy();
-          LogEntropy();
+          // LogEntropiesToFile(); // entropy over time
+          LogEntropy(); // average entropy
+          // spatial_entropy.ShowEntropies();
 
+          if (Settings_->EraseEntropyEveryBatch == 1) {
+            spatial_entropy.EraseHistograms();
+            spatial_entropy_sign.EraseHistograms();
+          }
+
+          PrintTimeElapsedSince(start_time_entropy, "Entropy compute time: ");
         }
-        if (batch % 50 == 0) {
+        if (batch > 0 and batch % Settings_->ComputeTrainLossFrequency == 0) {
+          float loss_train = ComputeLoss(6);
           // Compute and log train loss.
           IOController_->WriteToFile(logfile_loss_filename_, to_string(GetTimeElapsedSince(Settings_->session_start_time)) + ",");
-          IOController_->WriteToFile(logfile_loss_filename_, to_string(ComputeLoss(6)) + ",");
+          IOController_->WriteToFile(logfile_loss_filename_, to_string(loss_train) + ",");
           IOController_->WriteToFile(logfile_loss_filename_, to_string('-1') + "\n");
-
+          PrintFancy() << "Loss (train): " << loss_train << endl;
+        }
+        if (batch > 0 and batch % Settings_->WriteProbabilitiesFrequency == 0) {
           LogProbabilitiesToFile();
         }
 

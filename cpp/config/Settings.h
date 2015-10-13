@@ -36,6 +36,8 @@ public:
   void loadSettingsJSON(const char * fn_settings_file);
   void PrintSettings(int stage);
 
+  int EraseEntropyEveryBatch;
+
   int EnableDebugPrinter_Level1;
   int EnableDebugPrinter_Level2;
   int EnableDebugPrinter_Level3;
@@ -126,6 +128,10 @@ public:
   int StageThree_Dimension_C;
   int Dimension_B_BiasSlice;
   int Dimension_C_BiasSlice;
+
+  int ComputeTrainLossFrequency;
+  int ComputeEntropyFrequency;
+  int WriteProbabilitiesFrequency;
 
   int GradientRandomizeAtZero;
 

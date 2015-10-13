@@ -1,24 +1,33 @@
 {
-"DATASET_NAME"                                : "bb",
-"FeaturesSubFolder"                           : "/cs/ml/datasets/bball_tracking/features",
+"DATASET_NAME"                     : "bb",
+"FILENAME_FEATURES_B"              : "/ballh_c2.bin",
+"FILENAME_FEATURES_B_window_3by3"  : "/feat_ballh_occupancy_spatial_regularization_sliding_window_3by3cells.bin",
+"FILENAME_FEATURES_C"              : "/feat_defender_occupancy_coarsegrid_lvl2.bin",
+"FILENAME_FEATURES_C_window_3by3"  : "/feat_defender_occupancy_spatial_regularization_sliding_window_3by3cells.bin",
 
-"FILENAME_FEATURES_B"                         : "/ballh_c2.bin",
+"StageOne_SnapshotWeightsBiases"   : "/cs/ml/datasets/bball_tracking/snapshots/rank3/stage1/bb_r3s1___PYID____1_wgt+bias_1_0_0.272346_0.272465.bin",
+"StageOne_SnapshotMomentum": "",
+"StageThree_SnapshotWeightsBiases":  "/cs/ml/datasets/bball_tracking/snapshots/rank3/stage1/bb_r3s1___PYID____32_wgt+bias_9_5_0.195682_0.205268.bin",
 
-"FILENAME_FEATURES_B_window_3by3"             : "/feat_ballh_occupancy_spatial_regularization_sliding_window_3by3cells.bin",
-"FILENAME_FEATURES_C"                         : "/feat_defender_occupancy_coarsegrid_lvl2.bin",
-"FILENAME_FEATURES_C_window_3by3"             : "/feat_defender_occupancy_spatial_regularization_sliding_window_3by3cells.bin",
-"RootFolder"                                  : "/cs/ml/datasets/bball_tracking",
-"SeedSubFolder"                               : "/cs/ml/datasets/bball_tracking/seeds",
-"SnapshotSubFolder"                           : "/cs/ml/datasets/bball_tracking/snapshots",
+"Dimension_B"                      : 500,
+"Dimension_C"                      : 37,
+"Dimension_B_BiasSlice"            : 0,
+"Dimension_C_BiasSlice"            : 1,
 
-"StageOne_SnapshotWeightsBiases"              : "/cs/ml/datasets/bball_tracking/snapshots/rank3/stage1/ss_s1_rank3_23Feb113910_0_wgt+bias_0_0_0.277548_0.272863.bin",
+"================================":"================================",
+"================================":"================================",
+"WARNING: for stage 1 or stage 32 from scratch, these values should be 500, 37. However, they are also used to determine where the bias values are in the seed snapshot. In that case, for stage 3, change these to the dimensions for the snapshot.":"",
+"StageOne_Dimension_B"             : 500,
+"StageOne_Dimension_C"             : 37,
+"================================":"================================",
+"================================":"================================",
 
-"Dimension_B"                        : 500,
-"Dimension_C"                        : 37,
-"Dimension_B_BiasSlice"                       : 0,
-"Dimension_C_BiasSlice"                       : 1,
-"StageOne_Dimension_B"                        : 500,
-"StageOne_Dimension_C"                        : 37,
-"StageOne_NumberOfNonZeroEntries_B"           : 1,
-"StageOne_NumberOfNonZeroEntries_C"           : 5
+"StageOne_NumberOfNonZeroEntries_B": 1,
+"StageOne_NumberOfNonZeroEntries_C": 5,
+"StageThree_Dimension_B"           : 500,
+"StageThree_Dimension_C"           : 37,
+
+"StageThree_LF_A_seed"             : "/cs/ml/datasets/bball_tracking/seeds/seed_190415010139_A_20_level_2_defbiasslice_1.bin",
+"StageThree_LF_B_seed"             : "/cs/ml/datasets/bball_tracking/seeds/seed_190415010139_B_20_level_2_defbiasslice_1.bin",
+"StageThree_LF_C_seed"             : "/cs/ml/datasets/bball_tracking/seeds/seed_190415010139_C_20_level_2_defbiasslice_1.bin"
 }

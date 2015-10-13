@@ -56,6 +56,14 @@ void Settings::loadSettingsJSON(const char * fn_settings_file) {
     if (ss.compare("LogFile_Probabilities")                          == 0) LogFile_Probabilities = itr->value.GetString();
 
 
+    if (ss.compare("EraseEntropyEveryBatch")                      == 0) EraseEntropyEveryBatch = itr->value.GetInt();
+
+
+
+    if (ss.compare("ComputeTrainLossFrequency")                      == 0) ComputeTrainLossFrequency = itr->value.GetInt();
+    if (ss.compare("ComputeEntropyFrequency")                        == 0) ComputeEntropyFrequency = itr->value.GetInt();
+    if (ss.compare("WriteProbabilitiesFrequency")                    == 0) WriteProbabilitiesFrequency = itr->value.GetInt();
+
     if (ss.compare("LossWeightStrong")                               == 0) LossWeightStrong = itr->value.GetDouble();
     if (ss.compare("LossWeightWeak")                                 == 0) LossWeightWeak = itr->value.GetDouble();
     if (ss.compare("NumberOfColumnsScoreFunction")                   == 0) NumberOfColumnsScoreFunction = itr->value.GetInt();

@@ -1,18 +1,22 @@
 {
+"DATASET_NAME"                     : "bb",
+"FILENAME_FEATURES_B"              : "/ballh_c10.bin",
+"FILENAME_FEATURES_B_window_3by3"  : "/feat_ballh_occupancy_spatial_regularization_sliding_window_3by3cells.bin",
+"FILENAME_FEATURES_C"              : "/feat_defender_occupancy_coarsegrid_lvl2.bin",
+"FILENAME_FEATURES_C_window_3by3"  : "/feat_defender_occupancy_spatial_regularization_sliding_window_3by3cells.bin",
+
+"Comment"                          : "Use this file to load seed values for the bias units. Make sure that the dimensions match.",
+"StageThree_SnapshotWeightsBiases" : "/cs/ml/datasets/bball_tracking/snapshots/rank3/stage1/bb_r3s1___PYID____11_wgt+bias_9_0_0.272894_0.268279.bin",
 
 
-"FILENAME_FEATURES_B"                         : "/ballh_c10.bin",
-
-"FILENAME_FEATURES_B_window_3by3"             : "/feat_ballh_occupancy_spatial_regularization_sliding_window_3by3cells.bin",
-"FILENAME_FEATURES_C"                         : "/feat_defender_occupancy_coarsegrid_lvl2.bin",
-"FILENAME_FEATURES_C_window_3by3"             : "/feat_defender_occupancy_spatial_regularization_sliding_window_3by3cells.bin",
-
-"Dimension_B"                        : 20,
-"Dimension_C"                        : 37,
-"Dimension_B_BiasSlice"                       : 0,
-"Dimension_C_BiasSlice"                       : 1,
-"StageOne_Dimension_B"                        : 20,
-"StageOne_Dimension_C"                        : 37,
-"StageOne_NumberOfNonZeroEntries_B"           : 1,
-"StageOne_NumberOfNonZeroEntries_C"           : 5
+"Dimension_B"                      : 20,
+"Dimension_C"                      : 37,
+"Dimension_B_BiasSlice"            : 0,
+"Dimension_C_BiasSlice"            : 1,
+"StageOne_Dimension_B"             : 20,
+"StageOne_Dimension_C"             : 37,
+"StageOne_NumberOfNonZeroEntries_B": 1,
+"StageOne_NumberOfNonZeroEntries_C": 5,
+"StageThree_Dimension_B"           : 20,
+"StageThree_Dimension_C"           : 37
 }

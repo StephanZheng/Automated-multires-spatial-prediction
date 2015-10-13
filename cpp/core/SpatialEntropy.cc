@@ -40,7 +40,7 @@ void SpatialEntropy::init(int n_spatial_cells, int n_bins, float min_value, floa
 
 void SpatialEntropy::AddGradientToHistogram(int cell_index, float gradient) {
   // We have n_spatial_cells
-  if (debug_mode) PrintFancy() << name << "::AddGradientToSpatialEntropy cell " << cell_index << " grad " << gradient << endl;
+  // if (debug_mode) PrintFancy() << name << "::AddGradientToSpatialEntropy cell " << cell_index << " grad " << gradient << endl;
   TEST_LT(cell_index, (int)histograms_.size());
   if (cell_index >= 0 and cell_index < histograms_.size()){
     histograms_[cell_index].Add(gradient);
